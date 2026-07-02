@@ -1,3 +1,9 @@
+2026-07-02  Boyuan Yang <073plan@gmail.com>
+
+	* Import kill(1) translation from procps-ng 4.0.6 and exclude it
+	in the default installation as procps-ng starts to ship it by default.
+	* Bump version string to 1.6.4.4.
+
 2025-06-27  Boyuan Yang <073plan@gmail.com>
 
 	* Bump version string to 1.6.4.3.
