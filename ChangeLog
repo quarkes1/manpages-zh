@@ -1,3 +1,7 @@
+2026-07-12  Boyuan Yang <073plan@gmail.com>
+
+	* Full translation of zstd(1) from zstd 1.5.7.
+
 2026-07-02  Boyuan Yang <073plan@gmail.com>
 
 	* Import kill(1) translation from procps-ng 4.0.6 and exclude it
