@@ -1,0 +1,85 @@
+'\" t
+.\"     Title: su
+.\"    Author: [see the "AUTHOR(S)" section]
+.\" Generator: Asciidoctor 2.0.26
+.\"      Date: 2026-06-16
+.\"    Manual: 用户命令
+.\"    Source: util-linux 2.42.2
+.\"  Language: Chinese (Simplified)
+.\"
+.TH "SU" "1" "2026-06-16" "util\-linux 2.42.2" "用户命令"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "名称"
+su \- 以替代用户和组 ID 运行命令
+.SH "概述"
+.sp
+\fBsu\fP [选项] [\fB\-\fP] [\fI用户\fP|\fIUID\fP [\fI参数\fP.\|.\|.]]
+.SH "描述"
+.sp
+\fBsu\fP 允许以替代用户和组 ID 运行命令。未指定 \fI用户\fP 时，默认以 \fIroot\fP 身份运行交互式 shell。推荐始终使用 \fB\-\-login\fP 选项以避免混合环境带来的副作用。
+.sp
+此版本的 \fBsu\fP 使用 PAM 进行认证、账户和会话管理。自 2.38 版本起，\fBsu\fP 会重置进程资源限制 RLIMIT_NICE、RLIMIT_RTPRIO、RLIMIT_FSIZE、RLIMIT_AS 和 RLIMIT_NOFILE。
+.SH "选项"
+.sp
+\fB\-c\fP, \fB\-\-command\fP \fI命令\fP — 通过 \fB\-c\fP 选项将命令传递给 shell。
+.sp
+\fB\-f\fP, \fB\-\-fast\fP — 将 \fB\-f\fP 传递给 shell。
+.sp
+\fB\-g\fP, \fB\-\-group\fP \fI组\fP — 指定主组（仅 root 可用）。
+.sp
+\fB\-G\fP, \fB\-\-supp\-group\fP \fI组\fP — 指定附加组（仅 root 可用）。
+.sp
+\fB\-\fP, \fB\-l\fP, \fB\-\-login\fP — 以登录 shell 方式启动，模拟真实登录环境。会清除除 TERM、COLORTERM、NO_COLOR 及白名单外的所有环境变量，初始化 HOME、SHELL、USER、LOGNAME 和 PATH，切换到目标用户家目录，设置 shell 的 argv[0] 为 \*(Aq\fB\-\fP\*(Aq。
+.sp
+\fB\-m\fP, \fB\-p\fP, \fB\-\-preserve\-environment\fP — 保留整个环境。如果指定了 \fB\-\-login\fP 则忽略。
+.sp
+\fB\-P\fP, \fB\-\-pty\fP — 为会话创建伪终端，提供更好的安全性。
+.sp
+\fB\-s\fP, \fB\-\-shell\fP \fIshell\fP — 运行指定的 shell。shell 选择顺序：\fB\-\-shell\fP 指定的 > SHELL 环境变量 > 目标用户的 passwd 条目 > /bin/sh。
+.sp
+\fB\-T\fP, \fB\-\-no\-pty\fP — 不创建伪终端。
+.sp
+\fB\-w\fP, \fB\-\-whitelist\-environment\fP \fI列表\fP — 在清除 \fB\-\-login\fP 环境时保留指定的环境变量。
+.sp
+\fB\-h\fP, \fB\-\-help\fP — 显示帮助并退出。
+.sp
+\fB\-V\fP, \fB\-\-version\fP — 显示版本并退出。
+.SH "退出状态"
+.sp
+\fBsu\fP 通常返回其所执行命令的退出状态。自身生成的状态：1（执行前的一般性错误）、126（无法执行）、127（未找到命令）。
+.SH "配置文件"
+.sp
+\fBsu\fP 读取 \fI/etc/default/su\fP 和 \fI/etc/login.defs\fP，相关配置项：\fBFAIL_DELAY\fP（认证失败延迟秒数）、\fBENV_PATH\fP（普通用户 PATH）、\fBENV_ROOTPATH\fP/\fBENV_SUPATH\fP（root 的 PATH）、\fBALWAYS_SET_PATH\fP（是否始终初始化 PATH）。
+.SH "安全注意"
+.sp
+如果 \fBsu\fP 与原始会话共享终端，可能容易受到 TIOCSTI/TIOCLINUX ioctl 命令注入的特权提升攻击。可使用 \fB\-c\fP 选项（通过 \fBsetsid\fP(2) 创建新会话）或 \fB\-\-pty\fP/\fB\-P\fP 选项（使用伪终端）来防止。
+.SH "参见"
+.sp
+\fBsetpriv\fP(1), \fBlogin.defs\fP(5), \fBshells\fP(5), \fBpam\fP(8), \fBrunuser\fP(1)
+.SH "报告错误"
+.sp
+请通过 \c
+.URL "https://github.com/util\-linux/util\-linux/issues" "issue tracker" " 报告错误。"
+.SH "[中文版最新更新]"
+.BR 2026.07.12
+.SH "[中文版维护人]"
+.SH "[中国 Linux 论坛中文手册页翻译计划]"
+.BI https://github.com/man-pages-zh/manpages-zh

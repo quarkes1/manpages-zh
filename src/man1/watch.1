@@ -1,0 +1,115 @@
+.\" Copyright (c) procps-ng project
+.TH WATCH 1 2025-04-16 procps-ng
+.SH 名称
+watch \- 周期性执行程序，全屏显示输出
+.SH 概述
+.B watch
+.RI [ 选项 " .\|.\|.\&"]
+.I 命令
+.SH 描述
+.B watch
+重复运行
+.IR 命令 ，
+显示其输出和错误（第一屏的内容）。这让你可以观察程序输出随时间的变化。
+默认情况下，\fI命令\fR 每 2 秒运行一次，\fBwatch\fR 将持续运行直到被中断。
+头部信息会显示 \fI命令\fR 的开始时间、运行时长以及退出码。
+.SH 选项
+.TP
+\fB\-b\fR, \fB\-\-beep\fR
+如果 \fI命令\fR 非零退出，发出蜂鸣声。
+.TP
+\fB\-c\fR, \fB\-\-color\fR
+解释 ANSI 颜色和风格序列。
+.TP
+\fB\-C\fR, \fB\-\-no-color\fR
+不解释 ANSI 颜色和风格序列。
+.TP
+\fB\-d\fR, \fB\-\-differences\fR[=\fIpermanent\fR]
+高亮显示连续更新之间的差异。如果指定了可选参数 \fIpermanent\fR，
+则显示自第一次迭代以来的所有更改。
+.TP
+\fB\-e\fR, \fB\-\-errexit\fR
+在 \fI命令\fR 出错时冻结更新，按键后退出。\fBwatch\fR 的退出码将是
+\fI命令\fR 的退出码。如果信号 \fBn\fR 导致 \fI命令\fR 终止，退出码为 128 + \fBn\fR。
+.TP
+\fB\-g\fR, \fB\-\-chgexit\fR
+当 \fI命令\fR 的可见输出发生变化时退出。
+.TP
+\fB\-n\fR, \fB\-\-interval\fR \fI秒\fR
+指定更新间隔。小于 0.1 和大子 2678400（31 天）的值会被转换为对应的边界值。
+\fBWATCH_INTERVAL\fR 环境变量可用于持久设置非默认间隔。
+.TP
+\fB\-p\fR, \fB\-\-precise\fR
+在 \fI命令\fR 上一次运行\fB开始\fR后的 \fB\-\-interval\fR 秒执行，
+而非上一次运行\fB结束\fR后的 \fB\-\-interval\fR 秒。
+.TP
+\fB\-q\fR, \fB\-\-equexit\fR <周期数>
+当 \fI命令\fR 的输出在给定周期数内不变时退出。
+.TP
+\fB\-r\fR, \fB\-\-no-rerun\fR
+终端调整大小时不运行程序。
+.TP
+\fB\-t\fR, \fB\-\-no\-title\fR
+关闭通常显示在屏幕顶部的头部信息。
+.TP
+\fB\-w\fR, \fB\-\-no\-wrap\fR
+关闭行折行。长行将被截断而不是折到下一行。
+.TP
+\fB\-x\fR, \fB\-\-exec\fR
+将 \fI命令\fR 传递给 \fBexec\fR(3) 而非 \fBsh \-c\fR。
+程序启动会稍快，但 shell 功能（环境设置、变量和路径名展开等）不可用。
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+显示帮助文本并退出。
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+显示版本信息并退出。
+.SH "按键控制"
+.TP
+.B 空格键
+立即执行 \fI命令\fR。
+.TP
+.B q
+退出 \fBwatch\fR。
+.TP
+.B s
+截图保存。
+.SH "退出状态"
+.TP
+.B 0
+成功。
+.TP
+.B 1
+与 \fI命令\fR 操作无关的错误。
+.TP
+.B 2
+与 \fI命令\fR 执行和管理相关的错误。
+.TP
+.B 非零 (\-\-errexit)
+使用 \fB\-\-errexit\fR 时返回 \fI命令\fR 的最后退出码。
+.SH 环境变量
+.TP
+.B WATCH_INTERVAL
+更新间隔，遵循与 \fB\-\-interval\fR 命令行选项相同的规则。
+.SH 示例
+.PP
+监视目录内容变化：
+.IP
+watch \-d ls \-l
+.PP
+观察 CPU 频率：
+.IP
+watch \-n1 'grep "^cpu MHz" /proc/cpuinfo | sort -nrk4'
+.PP
+监视服务器状态：
+.IP
+watch \-n10 \-p \-d '{ date; for i in 10.0.0.31 10.0.0.32 10.0.0.33; do R=OK; ping \-c2 \-W2 "$i" &>/dev/null || R=FAIL; echo "$i: $R"; done } | tee \-a ~/log'
+.SH "报告错误"
+请将错误报告发送至
+.MT procps@freelists.org
+.ME 。
+.SH "[中文版最新更新]"
+.BR 2026.07.12
+.SH "[中文版维护人]"
+.SH "[中国 Linux 论坛中文手册页翻译计划]"
+.BI https://github.com/man-pages-zh/manpages-zh

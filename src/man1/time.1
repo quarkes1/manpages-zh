@@ -1,0 +1,214 @@
+.\" Copyright 2000, Andries E. Brouwer <aeb@cwi.nl>
+.\" Copyright, the authors of the Linux man-pages project
+.\" SPDX-License-Identifier: GPL-1.0-or-later
+.TH time 1 2026-02-08 "Linux man-pages 6.18"
+.SH 名称
+time \- 对简单命令计时或给出资源使用情况
+.SH 概述
+.SY time
+.RI [ 选项 \~.\|.\|.\&]
+.I command
+.RI [ 参数 \~.\|.\|.]
+.YS
+.SH 描述
+.B time
+命令使用给定的参数运行指定的
+.IR command 。
+当
+.I command
+完成时，
+.B time
+向标准错误写入一条消息，给出关于此程序运行的计时统计信息。
+这些统计信息包括：(i) 从调用到终止之间经过的真实时间，
+(ii) 用户 CPU 时间（由
+.BR times (2)
+返回的
+.I "struct tms"
+中
+.I tms_utime
+和
+.I tms_cutime
+值的总和），以及 (iii) 系统 CPU 时间（
+.I tms_stime
+和
+.I tms_cstime
+值的总和）。
+.P
+注意：某些 shell（如
+.BR bash (1)）
+具有内置的
+.B time
+命令，提供类似的计时和可能的其他资源使用信息。
+要访问真正的命令，可能需要指定其路径名
+（例如
+.IR /usr/bin/time ）。
+.SH 选项
+.TP
+.B \-p
+在 POSIX 区域设置下，使用精确的传统格式
+.IP
+.in +4n
+.EX
+"real %f\[rs]nuser %f\[rs]nsys %f\[rs]n"
+.EE
+.in
+.IP
+（数字以秒为单位）其中 %f 的输出小数位数未指定，
+但足以表达时钟滴答精度且至少为一位。
+.SH 退出状态
+如果
+.I command
+被调用，退出状态即为
+.I command
+的退出状态。
+否则，如果找不到
+.I command
+则为 127，如果找到但无法调用则为 126，
+如果发生其他错误则为其他非零值（1\[en]125）。
+.SH 环境变量
+变量
+.BR LANG 、
+.BR LC_ALL 、
+.BR LC_CTYPE 、
+.BR LC_MESSAGES 、
+.BR LC_NUMERIC
+和
+.B NLSPATH
+用于输出的文本和格式。
+.B PATH
+用于搜索
+.IR command 。
+.SH GNU 版本
+下面描述 GNU 1.7 版本的
+.BR time 。
+与工具名称无关，GNU 版本输出大量有用信息，不仅包括使用的时间，
+还包括其他资源，如内存、I/O 和 IPC 调用（在可用的情况下）。
+输出使用格式字符串进行格式化，可以通过
+.I \-f
+选项或
+.B TIME
+环境变量指定。
+.P
+默认格式字符串为：
+.P
+.in +4n
+.EX
+%Uuser %Ssystem %Eelapsed %PCPU (%Xtext+%Ddata %Mmax)k
+%Iinputs+%Ooutputs (%Fmajor+%Rminor)pagefaults %Wswaps
+.EE
+.in
+.P
+当给出
+.I \-p
+选项时，使用（可移植）输出格式：
+.P
+.in +4n
+.EX
+real %e
+user %U
+sys %S
+.EE
+.in
+.SS 格式字符串
+格式以通常的
+.BR printf (3)
+方式解释。普通字符直接复制，制表、换行和反斜杠分别用
+\[rs]t、\[rs]n 和 \[rs]\[rs] 转义，百分号用 %% 表示，其他 %
+表示转换。程序
+.B time
+自身总是添加尾部换行符。
+.P
+.B "时间"
+.TP
+.B %E
+经过的真实时间（格式 [小时:]分钟:秒）。
+.TP
+.B %e
+经过的真实时间（以秒为单位）。
+.TP
+.B %S
+进程在内核模式下花费的 CPU 秒数总计。
+.TP
+.B %U
+进程在用户模式下花费的 CPU 秒数总计。
+.TP
+.B %P
+此作业获得的 CPU 百分比，计算为 (%U + %S) / %E。
+.P
+.B "内存"
+.TP
+.B %M
+进程生命周期内的最大常驻集大小，以 K 字节为单位。
+.TP
+.B %K
+进程的平均总内存（数据+栈+文本）使用量，以 K 字节为单位。
+.TP
+.B %F
+进程运行期间发生的主要缺页错误数量。
+.TP
+.B %R
+次要或可恢复的缺页错误数量。
+.TP
+.B %W
+进程被换出主内存的次数。
+.P
+.B "I/O"
+.TP
+.B %I
+进程的文件系统输入次数。
+.TP
+.B %O
+进程的文件系统输出次数。
+.TP
+.B %r
+进程接收的套接字消息数。
+.TP
+.B %s
+进程发送的套接字消息数。
+.TP
+.B %k
+传递给进程的信号数。
+.TP
+.B %C
+被计时的命令的名称和命令行参数。
+.TP
+.B %x
+命令的退出状态。
+.SS GNU 选项
+.TP
+.BI "\-f " format ", \-\-format=" format
+指定输出格式，可能覆盖环境变量 TIME 中指定的格式。
+.TP
+.B "\-p, \-\-portability"
+使用可移植输出格式。
+.TP
+.BI "\-o " file ", \-\-output=" file
+不将结果发送到
+.IR stderr ，
+而是覆盖指定的文件。
+.TP
+.B "\-a, \-\-append"
+（与 \-o 一起使用。）不覆盖而是追加。
+.TP
+.B "\-v, \-\-verbose"
+输出关于程序所知的所有信息的非常详细的输出。
+.TP
+.B "\-q, \-\-quiet"
+不报告异常的程序终止或非零退出状态。
+.SS GNU 标准选项
+.TP
+.B "\-\-help"
+在标准输出上打印用法消息并成功退出。
+.TP
+.B "\-V, \-\-version"
+在标准输出上打印版本信息，然后成功退出。
+.SH 参见
+.BR bash (1),
+.BR tcsh (1),
+.BR times (2),
+.BR wait3 (2)
+.SH "[中文版最新更新]"
+.BR 2026.07.12
+.SH "[中文版维护人]"
+.SH "[中国 Linux 论坛中文手册页翻译计划]"
+.BI https://github.com/man-pages-zh/manpages-zh

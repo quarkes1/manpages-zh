@@ -1,0 +1,198 @@
+'\" t
+.\"     Title: hexdump
+.\"    Author: [参见 "AUTHOR(S)" 部分]
+.\" Generator: Asciidoctor 2.0.26
+.\"      Date: 2026-06-16
+.\"    Manual: 用户命令
+.\"    Source: util-linux 2.42.2
+.\"  Language: Chinese (Simplified)
+.\"
+.TH "HEXDUMP" "1" "2026-06-16" "util\-linux 2.42.2" "用户命令"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "名称"
+hexdump \- 以十六进制、十进制、八进制或 ASCII 格式显示文件内容
+.SH "概述"
+.sp
+\fBhexdump\fP [选项] \fI文件\fP .\|.\|.
+.sp
+\fBhd\fP [选项] \fI文件\fP .\|.\|.
+.SH "描述"
+.sp
+\fBhexdump\fP 工具是一个过滤器，以用户指定的格式显示指定的文件，如果未指定文件则显示标准输入。
+.SH "选项"
+.sp
+下文中，\fI长度\fP 和 \fI偏移量\fP 参数后面可以跟乘法后缀 KiB (=1024)、MiB (=1024*1024)，以及 GiB、TiB、PiB、EiB、ZiB 和 YiB 依此类推（"iB" 是可选的，例如 "K" 与 "KiB" 含义相同），或后缀 KB (=1000)、MB (=1000*1000)，以及 GB、TB、PB、EB、ZB 和 YB 依此类推。
+.sp
+\fB\-b\fP, \fB\-\-one\-byte\-octal\fP
+.RS 4
+\fI单字节八进制显示\fP。每行显示十六进制的输入偏移量，后跟十六个以空格分隔的三列零填充字节的输入数据（八进制）。
+.RE
+.sp
+\fB\-X\fP, \fB\-\-one\-byte\-hex\fP
+.RS 4
+\fI单字节十六进制显示\fP。每行显示十六进制的输入偏移量，后跟十六个以空格分隔的两列零填充字节的输入数据（十六进制）。
+.RE
+.sp
+\fB\-c\fP, \fB\-\-one\-byte\-char\fP
+.RS 4
+\fI单字节字符显示\fP。每行显示十六进制的输入偏移量，后跟十六个以空格分隔的三列空格填充的输入数据字符。
+.RE
+.sp
+\fB\-C\fP, \fB\-\-canonical\fP
+.RS 4
+\fI规范 hex+ASCII 显示\fP。每行显示十六进制的输入偏移量，后跟十六个以空格分隔的两列十六进制字节，再后跟以 \fB%_p\fP 格式包含在 \fB|\fP 字符中的相同十六字节。以 \fBhd\fP 调用程序时隐含此选项。
+.RE
+.sp
+\fB\-d\fP, \fB\-\-two\-bytes\-decimal\fP
+.RS 4
+\fI双字节十进制显示\fP。每行显示十六进制的输入偏移量，后跟八个以空格分隔的五列零填充双字节输入数据单元（无符号十进制）。
+.RE
+.sp
+\fB\-e\fP, \fB\-\-format\fP \fI格式字符串\fP
+.RS 4
+指定用于显示数据的格式字符串。
+.RE
+.sp
+\fB\-f\fP, \fB\-\-format\-file\fP \fI文件\fP
+.RS 4
+指定一个包含一个或多个换行分隔格式字符串的文件。空行和首非空白字符为井号 (#) 的行将被忽略。
+.RE
+.sp
+\fB\-L\fP, \fB\-\-color\fP[\fB=\fP\fI时机\fP]
+.RS 4
+接受输出的颜色单元。可选参数 \fI时机\fP 可以是 \fBauto\fP、\fBnever\fP 或 \fBalways\fP。如果省略 \fI时机\fP 参数，默认为 \fBauto\fP。颜色可以被禁用；当前内置默认值请参见 \fB\-\-help\fP 输出。另请参见下文 \fB颜色\fP 子节和 \fBCOLORS\fP 节。
+.RE
+.sp
+\fB\-n\fP, \fB\-\-length\fP \fI长度\fP
+.RS 4
+仅解释输入的 \fI长度\fP 个字节。
+.RE
+.sp
+\fB\-o\fP, \fB\-\-two\-bytes\-octal\fP
+.RS 4
+\fI双字节八进制显示\fP。每行显示十六进制的输入偏移量，后跟八个以空格分隔的六列零填充双字节输入数据量（八进制）。
+.RE
+.sp
+\fB\-s\fP, \fB\-\-skip\fP \fI偏移量\fP
+.RS 4
+跳过输入开头的 \fI偏移量\fP 个字节。
+.RE
+.sp
+\fB\-v\fP, \fB\-\-no\-squeezing\fP
+.RS 4
+\fB\-v\fP 选项使 \fBhexdump\fP 显示所有输入数据。不使用 \fB\-v\fP 选项时，任何与前一输出行组相同（输入偏移量除外）的输出行组，都将被替换为一个由单个星号组成的行。
+.RE
+.sp
+\fB\-x\fP, \fB\-\-two\-bytes\-hex\fP
+.RS 4
+\fI双字节十六进制显示\fP。每行显示十六进制的输入偏移量，后跟八个以空格分隔的四列零填充双字节输入数据量（十六进制）。
+.RE
+.sp
+\fB\-h\fP, \fB\-\-help\fP
+.RS 4
+显示帮助文本并退出。
+.RE
+.sp
+\fB\-V\fP, \fB\-\-version\fP
+.RS 4
+显示版本信息并退出。
+.RE
+.sp
+对于每个输入文件，\fBhexdump\fP 按顺序将输入复制到标准输出，根据 \fB\-e\fP 和 \fB\-f\fP 选项指定的格式字符串转换数据。
+.SH "格式"
+.sp
+格式字符串包含任意数量的格式单元，以空白字符分隔。每个格式单元最多包含三项：迭代计数、字节计数和格式。
+.sp
+迭代计数是一个可选的正整数，默认值为一。每种格式被应用迭代计数次。
+.sp
+字节计数是一个可选的正整数。如果指定，它定义了该格式每次迭代要解释的字节数。
+.sp
+如果指定了迭代计数和/或字节计数，必须在迭代计数之后和/或字节计数之前放置一个单斜杠以消除歧义。斜杠前后的任何空白字符都将被忽略。
+.sp
+格式是必需的，必须用双引号 (" ") 括起来。它被解释为 fprintf 风格的格式字符串（参见 \fBfprintf\fP(3)），但有以下例外：
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 1.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 1." 4.2
+.\}
+星号 (*) 不能用作字段宽度或精度。
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 2.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 2." 4.2
+.\}
+每个 \fBs\fP 转换字符都需要字节计数或字段精度（不同于 \fBfprintf\fP(3) 的默认行为，即在未指定精度时打印整个字符串）。
+.RE
+.sp
+不支持的转换字符：\fBh\fP、\fBl\fP、\fBn\fP、\fBp\fP 和 \fBq\fP。支持的 C 标准转义序列：\e0 (NULL)、\ea (警报)、\eb (退格)、\ef (换页)、\en (换行)、\er (回车)、\et (制表)、\ev (垂直制表)。
+.RE
+.SS "转换字符串"
+.sp
+\fB_a[dox]\fP — 显示下一个要显示字节的输入偏移量（跨输入文件累积）。后缀 \fBd\fP、\fBo\fP、\fBx\fP 分别指定十进制、八进制、十六进制。
+.sp
+\fB_A[dox]\fP — 与 \fB_a\fP 几乎相同，但仅在所有输入数据处理完毕后执行一次。
+.sp
+\fB_c\fP — 以默认字符集输出字符。不可打印字符以三字符零填充八进制显示。
+.sp
+\fB_p\fP — 以默认字符集输出字符。不可打印字符显示为 \*(Aq\fB.\fP\*(Aq。
+.sp
+\fB_u\fP — 输出 US ASCII 字符，控制字符以缩写名显示（nul、soh、stx、...、del）。
+.SS "颜色"
+.sp
+\fB_L[颜色单元1,颜色单元2,...,颜色单元n]\fP — 格式说明符末尾使用，语法：\fB[!]COLOR[:VALUE][@OFFSET_START[\-END]]\fP。
+.SH "退出状态"
+.sp
+\fBhexdump\fP 成功时退出 0，出错时退出 > 0。
+.SH "示例"
+.sp
+以浏览格式显示输入：
+.sp
+.if n .RS 4
+.nf
+.fam C
+   "%06.6_ao "\&  12/1 "%3_u "
+   "\et" "%_p "
+   "\en"
+.fam
+.fi
+.if n .RE
+.SH "报告错误"
+.sp
+请通过 \c
+.URL "https://github.com/util\-linux/util\-linux/issues" "issue tracker" " 报告错误。"
+.SH "获取"
+.sp
+\fBhexdump\fP 命令是 util\-linux 软件包的一部分，可从 \c
+.URL "https://www.kernel.org/pub/linux/utils/util\-linux/" "Linux Kernel Archive" " 下载。"
+.SH "[中文版最新更新]"
+.BR 2026.07.12
+.SH "[中文版维护人]"
+.SH "[中国 Linux 论坛中文手册页翻译计划]"
+.BI https://github.com/man-pages-zh/manpages-zh

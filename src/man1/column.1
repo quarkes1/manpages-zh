@@ -1,0 +1,124 @@
+'\" t
+.\"     Title: column
+.\"    Author: [see the "AUTHOR(S)" section]
+.\" Generator: Asciidoctor 2.0.26
+.\"      Date: 2026-06-16
+.\"    Manual: 用户命令
+.\"    Source: util-linux 2.42.2
+.\"  Language: Chinese (Simplified)
+.\"
+.TH "COLUMN" "1" "2026-06-16" "util\-linux 2.42.2" "用户命令"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "名称"
+column \- 将列表格式化为多列
+.SH "概述"
+.sp
+\fBcolumn\fP [选项] [\fI文件\fP .\|.\|.]
+.SH "描述"
+.sp
+\fBcolumn\fP 工具将其输入格式化为多列。支持三种模式：
+.sp
+\fB先填满列再填行\fP（默认模式）、\fB先填满行再填列\fP（\fB\-x, \-\-fillrows\fP 启用）、
+\fB创建表格\fP（\fB\-t\fP/\fB\-\-table\fP 启用）。表格模式下，交互模式中输出对齐到终端宽度，非交互模式中对齐到 80 列。
+.SH "选项"
+.sp
+\fB\-J, \-\-json\fP — 使用 JSON 输出格式打印表格。
+.sp
+\fB\-c, \-\-output\-width\fP \fI宽度\fP — 将输出格式化为指定的字符宽度。默认在交互模式下为终端宽度，非交互模式下为 80 列。
+.sp
+\fB\-d, \-\-table\-noheadings\fP — 不打印表头。
+.sp
+\fB\-o, \-\-output\-separator\fP \fI字符串\fP — 表格输出的列分隔符（默认为两个空格）。
+.sp
+\fB\-s, \-\-separator\fP \fI分隔符\fP — 输入项分隔符（默认为空白字符）。
+.sp
+\fB\-S, \-\-use\-spaces\fP \fI数量\fP — 非表格模式下，使用空格而非制表符对齐列，指定分隔两列的最小空格数。
+.sp
+\fB\-t, \-\-table\fP — 确定输入包含的列数并创建表格。适用于美化打印。
+.sp
+\fB\-N, \-\-table\-columns\fP \fI名称\fP — 用逗号分隔的列表指定列名，用于表头和选项参数中的列引用。
+.sp
+\fB\-l, \-\-table\-columns\-limit\fP \fI数量\fP — 指定输入列的最大数量。
+.sp
+\fB\-R, \-\-table\-right\fP \fI列\fP — 将指定列的文本右对齐。
+.sp
+\fB\-T, \-\-table\-truncate\fP \fI列\fP — 指定在必要时可以截断文本的列。
+.sp
+\fB\-E, \-\-table\-noextreme\fP \fI列\fP — 指定计算列宽时应忽略超长内容的列。默认为最后一列激活。
+.sp
+\fB\-e, \-\-table\-header\-repeat\fP — 每页打印表头行。
+.sp
+\fB\-W, \-\-table\-wrap\fP \fI列\fP — 指定可以使用多行单元格的列。
+.sp
+\fB\-H, \-\-table\-hide\fP \fI列\fP — 不打印指定的列。
+.sp
+\fB\-O, \-\-table\-order\fP \fI列\fP — 指定输出列的顺序。
+.sp
+\fB\-n, \-\-table\-name\fP \fI名称\fP — 指定 JSON 输出中使用的表格名称，默认为 "table"。
+.sp
+\fB\-C, \-\-table\-column\fP \fI属性\fP — 定义列属性，支持: name, trunc, right, width, strictwidth, noextremes, hidden, wrap, wrapnl, json, color, headercolor 等。可多次使用。
+.sp
+\fB\-r, \-\-tree\fP \fI列\fP — 指定用于树状输出的列。
+.sp
+\fB\-i, \-\-tree\-id\fP \fI列\fP — 指定包含每行子节点 ID 的列。
+.sp
+\fB\-p, \-\-tree\-parent\fP \fI列\fP — 指定包含每行父节点 ID 的列。
+.sp
+\fB\-x, \-\-fillrows\fP — 先填满行再填列。
+.sp
+\fB\-L, \-\-keep\-empty\-lines\fP — 保留输入中仅含空白字符的行。
+.sp
+\fB\-h\fP, \fB\-\-help\fP — 显示帮助文本并退出。
+.sp
+\fB\-V\fP, \fB\-\-version\fP — 显示版本信息并退出。
+.SH "示例"
+.sp
+打印带有表头的 fstab 并将数字右对齐：
+.sp
+.if n .RS 4
+.nf
+.fam C
+sed \*(Aqs/#.*//\*(Aq /etc/fstab | column \-\-table \-\-table\-columns SOURCE,TARGET,TYPE,OPTIONS,FREQ,PASS \-\-table\-right FREQ,PASS
+.fam
+.fi
+.if n .RE
+.sp
+打印树状结构：
+.sp
+.if n .RS 4
+.nf
+.fam C
+echo \-e \*(Aq1 0 A\(rsn2 1 AA\(rsn3 1 AB\(rsn4 2 AAA\(rsn5 2 AAB\*(Aq | column \-\-tree\-id 1 \-\-tree\-parent 2 \-\-tree 3
+.fam
+.fi
+.if n .RE
+.SH "参见"
+.sp
+\fBcolrm\fP(1), \fBls\fP(1), \fBpaste\fP(1), \fBsort\fP(1)
+.SH "报告错误"
+.sp
+请通过 \c
+.URL "https://github.com/util\-linux/util\-linux/issues" "issue tracker" " 报告错误。"
+.SH "[中文版最新更新]"
+.BR 2026.07.12
+.SH "[中文版维护人]"
+.SH "[中国 Linux 论坛中文手册页翻译计划]"
+.BI https://github.com/man-pages-zh/manpages-zh

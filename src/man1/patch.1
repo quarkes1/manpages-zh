@@ -1,0 +1,220 @@
+.\" patch man page
+.ds = \-\^\-
+.de Sp
+.if t .sp .3
+.if n .sp
+..
+.ds Cw CW
+.if \n(.g .if f CR .ds Cw CR
+.ds fC \f(\*(Cw
+.TH PATCH 1 "" GNU
+.SH 名称
+patch \- 将 diff 文件应用到原始文件
+.SH 概述
+.B patch
+.RI [ 选项 ]
+.RI [ 原始文件
+.RI [ 补丁文件 ]]
+.Sp
+通常只需：
+.Sp
+.BI "patch \-p" "num"
+.BI < 补丁文件
+.SH 描述
+.B patch
+接受一个包含
+.B diff
+程序生成的差异列表的补丁文件
+.IR patchfile ，
+并将这些差异应用到一个或多个原始文件上，生成补丁后的版本。
+通常补丁后的版本会替换原始文件。可通过
+.B \-b
+或
+.B \*=backup
+选项创建备份。
+.PP
+启动时，
+.B patch
+会尝试判断差异列表的类型，除非被
+\fB\-c\fP (\fB\*=context\fP)、\fB\-e\fP (\fB\*=ed\fP)、\fB\-n\fP (\fB\*=normal\fP) 或
+\fB\-u\fP (\fB\*=unified\fP) 选项覆盖。
+上下文差异（旧式、新式和 unified）和普通差异由
+.B patch
+程序本身应用，而
+.B ed
+差异则通过管道传递给
+.BR ed (1)
+编辑器。
+.PP
+.B patch
+会尝试跳过前导及尾随垃圾内容。因此你可以将包含差异列表的电子邮件直接喂给
+.BR patch 。
+如果整个差异被一致地缩进、行尾为 CRLF、或多次封装（通过在以 "\fB\-\fP" 开头的行前添加 "\fB\- \fP"），
+这些都会被考虑在内。以
+.B #
+开头的行被视为注释而被忽略。
+.PP
+对于上下文差异，
+.B patch
+可以在补丁中提到的行号不正确时进行检测，并尝试找到正确的应用位置。
+首先它按照补丁块中提到的行号进行尝试，加减之前补丁块使用的偏移量。
+如果不正确，
+.B patch
+会前后扫描以匹配上下文中给出的行。默认最大模糊因子为 2。
+.PP
+如果
+.B patch
+找不到安装补丁块的位置，则将其写入拒绝文件（通常是输出文件名加
+.B \&.rej
+后缀）。
+.SH 选项
+.TP 3
+\fB\-b\fP 或 \fB\*=backup\fP — 创建备份文件。
+.TP
+\fB\*=backup\-if\-mismatch\fP — 当补丁与文件不完全匹配且未另外请求备份时备份文件（默认，非 POSIX 模式）。
+.TP
+\fB\*=no\-backup\-if\-mismatch\fP — 不备份不匹配的文件（POSIX 模式下默认）。
+.TP
+\fB\-B\fP \fIpref\fP 或 \fB\*=prefix=\fP\fIpref\fP — 使用 simple 方法确定备份文件名，在文件名前添加 \fIpref\fP。
+.TP
+\fB\*=binary\fP — 以二进制模式读写所有文件。
+.TP
+\fB\-c\fP 或 \fB\*=context\fP — 将补丁文件解释为普通上下文差异。
+.TP
+\fB\-d\fP \fIdir\fP 或 \fB\*=directory=\fP\fIdir\fP — 立即切换到目录 \fIdir\fP。
+.TP
+\fB\-D\fP \fIdefine\fP 或 \fB\*=ifdef=\fP\fIdefine\fP — 使用 #ifdef...#endif 结构标记更改。
+.TP
+\fB\*=dry\-run\fP — 打印应用结果而不实际更改文件。
+.TP
+\fB\-e\fP 或 \fB\*=ed\fP — 将补丁文件解释为 ed 脚本。
+.TP
+\fB\-E\fP 或 \fB\*=remove\-empty\-files\fP — 删除补丁后变为空的输出文件。
+.TP
+\fB\-f\fP 或 \fB\*=force\fP — 不询问任何问题，强制执行。
+.TP
+\fB\-F\fP \fInum\fP 或 \fB\*=fuzz=\fP\fInum\fP — 设置最大模糊因子。默认为 2。值越大，错误补丁的风险越高。
+.TP
+\fB\-g\fP \fInum\fP 或 \fB\*=get=\fP\fInum\fP — 控制 RCS/ClearCase/Perforce/SCCS 文件处理。
+.TP
+\fB\*=help\fP — 打印选项摘要并退出。
+.TP
+\fB\-i\fP \fIpatchfile\fP 或 \fB\*=input=\fP\fIpatchfile\fP — 从指定文件读取补丁。
+.TP
+\fB\-l\fP 或 \fB\*=ignore\-whitespace\fP — 松散匹配模式，空白字符序列可任意匹配。
+.TP
+\fB\*=merge\fP — 合并补丁，冲突用 <<<<<<< 和 >>>>>>> 标记。
+.TP
+\fB\-n\fP 或 \fB\*=normal\fP — 将补丁解释为普通 diff。
+.TP
+\fB\-N\fP 或 \fB\*=forward\fP — 不尝试反向应用已应用的补丁。
+.TP
+\fB\-o\fP \fIoutfile\fP 或 \fB\*=output=\fP\fIoutfile\fP — 将输出发送到文件而非就地修补。
+.TP
+\fB\-p\fP\fInum\fP 或 \fB\*=strip\fP\fB=\fP\fInum\fP — 从文件名中剥离包含 \fInum\fP 个前导斜杠的最小前缀。
+.TP
+\fB\*=posix\fP — 更严格地遵循 POSIX 标准。
+.TP
+\fB\*=quoting\-style=\fP\fIword\fP — 使用指定风格引用输出名称（literal/shell/shell-always/c/escape）。
+.TP
+\fB\-r\fP \fIrejectfile\fP 或 \fB\*=reject\-file=\fP\fIrejectfile\fP — 将拒绝内容写入指定文件。
+.TP
+\fB\-R\fP 或 \fB\*=reverse\fP — 假定补丁以新旧文件互换的方式创建（反向补丁）。
+.TP
+\fB\*=read\-only=\fP\fIbehavior\fP — 对只读文件的行为：ignore/warn/fail。
+.TP
+\fB\-s\fP 或 \fB\*=silent\fP 或 \fB\*=quiet\fP — 静默工作。
+.TP
+\fB\*=follow\-symlinks\fP — 跟随符号链接（不推荐使用）。
+.TP
+\fB\-t\fP 或 \fB\*=batch\fP — 批量模式，类似 \fB\-f\fP 但假设补丁可能是反向的。
+.TP
+\fB\-T\fP 或 \fB\*=set\-time\fP — 根据上下文 diff 头中的时间戳设置文件时间（推荐使用 \fB\-Z\fP/UTC 代替）。
+.TP
+\fB\-u\fP 或 \fB\*=unified\fP — 将补丁解释为 unified 上下文差异。
+.TP
+\fB\-v\fP 或 \fB\*=version\fP — 输出版本信息并退出。
+.TP
+\fB\-V\fP \fImethod\fP 或 \fB\*=version\-control=\fP\fImethod\fP — 备份方法：existing/nil（默认）、numbered/t、simple/never。
+.TP
+\fB\*=verbose\fP — 输出额外的工作信息。
+.TP
+\fB\-Y\fP \fIpref\fP 或 \fB\*=basename\-prefix=\fP\fIpref\fP — 使用 simple 方法，在基文件名前添加 \fIpref\fP。
+.TP
+\fB\-z\fP \fIsuffix\fP 或 \fB\*=suffix=\fP\fIsuffix\fP — 使用 simple 方法，使用指定后缀。
+.TP
+\fB\-Z\fP 或 \fB\*=set\-utc\fP — 根据上下文 diff 头中的 UTC 时间戳设置文件时间。
+.SH 环境变量
+.TP 3
+.B PATCH_GET — 是否默认从 RCS/SCCS 获取文件。
+.TP
+.B POSIXLY_CORRECT — 如果设置，默认更严格遵循 POSIX。
+.TP
+.B QUOTING_STYLE — \fB\*=quoting\-style\fP 的默认值。
+.TP
+.B SIMPLE_BACKUP_SUFFIX — 简单备份后缀，默认 \fB\&.orig\fP。
+.TP
+\fBTMPDIR\fP, \fBTMP\fP, \fBTEMP\fP — 临时文件目录。
+.TP
+\fBVERSION_CONTROL\fP 或 \fBPATCH_VERSION_CONTROL\fP — 版本控制风格。
+.SH 文件
+.TP 3
+.IB $TMPDIR "/p*" — 临时文件
+.TP
+.B /dev/tty — 控制终端，用于获取用户的回答
+.SH "参见"
+.BR diff (1),
+.BR ed (1),
+.BR merge (1).
+.SH "补丁发送者注意事项"
+.PP
+系统地创建补丁。使用版本控制系统时这应该很容易；例如 Git 用户可以使用
+.BR "git diff" 。
+另一个好方法是
+.BI "diff\ \-Naur\ " "old\ new"。
+.PP
+如果补丁需要同时传达文件时间戳和内容，diff 命令头应使用 UTC 时间。
+示例：\fBLC_ALL=C TZ=UTC0 diff \-Naur myprog\-2.7 myprog\-2.8\fP。
+.PP
+告诉接收者如何应用补丁——切换到哪个目录以及使用哪些
+.B patch
+选项。推荐使用
+.B "\-Np1"
+选项字符串。
+.PP
+避免发送比较备份文件名的补丁（如 README.orig），这可能使
+.B patch
+修补备份文件而非真实文件。应发送比较不同目录中相同基文件名的补丁。
+.PP
+注意不要发送反向补丁。
+.SH 诊断
+.PP
+.B patch
+的退出状态：0（所有补丁块成功应用）、1（部分补丁块无法应用或有合并冲突）、2（更严重的问题）。
+.SH 注意事项
+.PP
+上下文差异无法可靠地表示空文件的创建或删除、空目录或特殊文件（如符号链接）。也无法表示文件元数据的更改。
+.B patch
+只有将补丁应用到与生成补丁时的文件版本完全相同的文件时，结果才有保证是正确的。
+.SH 复制
+版权所有 \(co 1989\(en2025 Free Software Foundation, Inc.
+.br
+版权所有 \(co 1984\(en1986, 1988 Larry Wall.
+.PP
+允许制作和分发本手册的逐字副本，前提是所有副本上保留版权声明和此许可声明。
+.PP
+允许根据逐字复制的条件复制和分发本手册的修改版本，前提是所产生的整个衍生作品按照与此许可声明相同的许可声明条款分发。
+.PP
+允许按照上述修改版本的条件将本手册翻译成其他语言并进行复制和分发，除非此许可声明可以包含在版权持有者批准的翻译中，而不是原始英文中。
+.SH 作者
+Larry Wall 编写了
+.B patch
+的原始版本。Paul Eggert 移除了任意限制，添加了二进制文件支持等。其他贡献者包括 Wayne Davison 和 David MacKenzie。Andreas Gruenbacher 添加了合并支持。
+.SH BUGS
+请通过邮件报告错误至
+.BR <bug-patch@gnu.org> 。
+.SH "[中文版最新更新]"
+.BR 2026.07.12
+.SH "[中文版维护人]"
+.SH "[中国 Linux 论坛中文手册页翻译计划]"
+.BI https://github.com/man-pages-zh/manpages-zh
