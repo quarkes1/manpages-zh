@@ -3,14 +3,17 @@
 .\"
 .de Sp \" 垂直间距（当不能使用 .PP 时）
 .if t .sp .5v
-.if n .sp ..
+.if n .sp
+..
 .de Vb \" 开始原样文本
 .ft CW
 .nf
-.ne \\$1 ..
+.ne \\$1
+..
 .de Ve \" 结束原样文本
 .ft R
-.fi ..
+.fi
+..
 .ie n \{\
 .    ds C` ""
 .    ds C' ""
@@ -21,7 +24,8 @@
 'br\}
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
-.de IX ..
+.de IX
+..
 .nr rF 0
 .if \n(.g .if rF .nr rF 1
 .if (\n(rF:(\n(.g==0)) \{\
