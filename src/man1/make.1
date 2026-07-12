@@ -1,0 +1,391 @@
+.TH MAKE 1 "26 May 2023" "GNU" "用户命令"
+.SH 名字
+make \- 用于维护程序组的 GNU Make 工具
+.SH 总览
+.B make
+[\fI选项\fR]... [\fI目标\fR]...
+.SH 描述
+.LP
+.B make
+工具会自动判断一个大型程序中哪些部分需要重新编译，并发出命令来重新编译它们。
+本手册描述的是
+.B make
+的 GNU 实现，由 Richard Stallman 和 Roland McGrath 最初编写，目前由 Paul Smith 维护。
+我们的示例使用 C 程序，因为它们非常常见，但你可以在任何可以通过
+shell 命令运行编译器的编程语言中使用
+.BR make 。
+事实上，
+.B make
+并不仅限于程序。你可以用它来描述任何需要根据某些文件的变化
+自动从其他文件更新目标文件的任务。
+.LP
+要准备使用
+.BR make ，
+你必须编写一个名为
+.I makefile
+的文件，它描述了程序中文件之间的关系，并提供了更新每个文件的命令。
+在一个程序中，通常可执行文件由目标文件更新，而目标文件又由编译源文件生成。
+.LP
+一旦有了合适的 makefile，每次你修改某些源文件后，只需执行这个简单的 shell 命令：
+.sp 1
+.RS
+.B make
+.RE
+.sp 1
+就足以完成所有必要的重新编译。
+.B make
+程序使用 makefile 中的描述和文件的最后修改时间来
+决定哪些文件需要更新。对于每个需要更新的文件，它会执行 makefile 中记录的命令。
+.LP
+.B make
+执行
+.I makefile
+中的命令来更新一个或多个
+.IR 目标 (target) ，
+其中
+.I 目标
+通常是一个程序。
+如果没有指定
+.B \-f
+选项，
+.B make
+将按顺序查找
+.IR GNUmakefile 、
+.IR makefile
+和
+.IR Makefile
+这几个 makefile 文件。
+.LP
+通常你应该将你的 makefile 命名为
+.I makefile
+或
+.IR Makefile 。
+（我们推荐使用
+.I Makefile
+，因为它在目录列表的靠前位置醒目地显示，紧邻其他重要文件如
+.IR README 。）
+第一个被检查的名字
+.I GNUmakefile
+不推荐用于大多数 makefile。只有当你的 makefile 是 GNU Make 专有
+且无法被其他版本的
+.B make
+理解时，才应使用这个名字。
+如果
+.I makefile
+为 '\-'，则从标准输入读取。
+.LP
+.B make
+更新一个目标的条件是：它所依赖的必备文件自上次目标被修改以来已被修改，
+或者该目标不存在。
+.SH 选项
+.sp 1
+.TP 0.5i
+\fB\-b\fR, \fB\-m\fR
+这些选项被忽略，仅为与其他版本的
+.B make
+兼容而保留。
+.TP 0.5i
+\fB\-B\fR, \fB\-\-always\-make\fR
+无条件地构建所有目标。
+.TP 0.5i
+\fB\-C\fR \fI目录\fR, \fB\-\-directory\fR=\fI目录\fR
+在读取 makefile 或做任何其他操作之前切换到指定
+.IR 目录 。
+如果指定了多个
+.B \-C
+选项，每个选项都相对于前一个选项进行解析：
+.BR "\-C " /
+.BR "\-C " etc
+等价于
+.BR "\-C " /etc.
+这通常用于
+.B make
+的递归调用。
+.TP 0.5i
+.B \-d
+除正常处理外还打印调试信息。
+调试信息包括哪些文件正在被考虑重新构建，
+哪些文件时间正在被比较以及比较结果，
+哪些文件实际需要重新构建，
+哪些隐式规则被考虑以及哪些被应用——所有关于
+.B make
+如何决定做什么的有趣细节。
+.TP 0.5i
+.BI \-\-debug "[=标志]"
+除正常处理外还打印调试信息。
+如果省略
+.IR 标志 ，
+则行为与指定
+.B \-d
+相同。
+.I 标志
+可以是以下名称中的任意一个或全部，用逗号或空格分隔。只有
+第一个字符是有效的，其余部分可以省略：
+.I all
+表示所有调试输出（相当于使用
+.BR \-d ），
+.I basic
+表示基本调试，
+.I verbose
+表示更详细的基本调试，
+.I implicit
+表示显示隐式规则搜索操作，
+.I jobs
+表示命令调用的详细信息，
+.I makefile
+表示在重新构建 makefile 时的调试信息，
+.I print
+显示所有实际运行的配方（即使它们被设置为静默），
+.I why
+显示
+.B make
+决定重建每个目标的原因。使用
+.I none
+禁用所有之前的调试标志。
+.TP 0.5i
+\fB\-e\fR, \fB\-\-environment\-overrides\fR
+使从环境中获取的变量优先于 makefile 中的变量。
+.TP 0.5i
+\fB\-E\fR \fI字符串\fR, \fB\-\-eval\fR \fI字符串\fR
+在解析任何 makefile 之前，使用 \fBeval\fR 函数解释
+.IR 字符串 。
+.TP 0.5i
+\fB\-f\fR \fI文件\fR, \fB\-\-file\fR=\fI文件\fR, \fB\-\-makefile\fR=\fI文件\fR
+使用指定
+.I 文件
+作为 makefile。
+.TP 0.5i
+\fB\-i\fR, \fB\-\-ignore\-errors\fR
+忽略重建文件的命令执行中的所有错误。
+.TP 0.5i
+\fB\-I\fR \fI目录\fR, \fB\-\-include\-dir\fR=\fI目录\fR
+指定搜索被包含 makefile 的
+.IR 目录 。
+如果使用多个
+.B \-I
+选项指定多个目录，则按照指定的顺序搜索这些目录。
+与
+.B make
+其他标志的参数不同，使用
+.B \-I
+标志指定的目录可以直接跟在标志后面：
+.BI \-I 目录
+以及
+.B \-I
+.I 目录
+都是允许的。此语法是为了兼容 C 预处理器的
+.B \-I
+标志。
+.TP 0.5i
+\fB\-j\fR [\fI作业数\fR], \fB\-\-jobs\fR[=\fI作业数\fR]
+指定同时运行的
+.I 作业
+（命令）数量。
+如果有多个
+.B \-j
+选项，以最后一个为准。
+如果
+.B \-j
+选项不带参数，
+.B make
+将不限制同时运行的作业数量。
+.TP 0.5i
+\fB\--jobserver-style=\fR\fI类型\fR
+指定要使用的 jobserver 类型。
+.I 类型
+可以是
+.BR fifo 、
+.B pipe
+或
+.B sem
+（仅限 Windows）。
+.TP 0.5i
+\fB\-k\fR, \fB\-\-keep\-going\fR
+发生错误后尽可能继续。
+虽然失败的目标以及依赖它的目标无法被重新构建，
+但这些目标的其他依赖项仍然可以被处理。
+.TP 0.5i
+\fB\-l\fR [\fI负载\fR], \fB\-\-load\-average\fR[=\fI负载\fR]
+指定当有其他作业正在运行且系统负载平均值至少为
+.I 负载
+（一个浮点数）时，不应启动新的作业（命令）。
+不带参数时，移除之前的负载限制。
+.TP 0.5i
+\fB\-L\fR, \fB\-\-check\-symlink\-times\fR
+使用符号链接和目标之间的最新修改时间。
+.TP 0.5i
+\fB\-n\fR, \fB\-\-just\-print\fR, \fB\-\-dry\-run\fR, \fB\-\-recon\fR
+打印将被执行的命令，但不实际执行它们（某些特殊情况除外）。
+.TP 0.5i
+\fB\-o\fR \fI文件\fR, \fB\-\-old\-file\fR=\fI文件\fR, \fB\-\-assume\-old\fR=\fI文件\fR
+即使
+.I 文件
+比它的依赖项更旧，也不重新构建它，并且不因为
+.I 文件
+的改变而重新构建任何东西。
+本质上该文件被视为非常旧，其规则被忽略。
+.TP 0.5i
+\fB\-O\fR[\fI类型\fR], \fB\-\-output\-sync\fR[=\fI类型\fR]
+当使用 \fB\-j\fR 并行运行多个作业时，确保每个作业的
+输出被收集在一起，而不是与其他作业的输出交错混杂。如果
+.I 类型
+未指定或为
+.BR target ，
+则每个目标的整个配方的输出被组合在一起。如果
+.I 类型
+为
+.BR line ，
+则配方中的每个命令行的输出被组合在一起。
+如果
+.I 类型
+为
+.BR recurse ，
+则整个递归 make 的输出被组合在一起。
+如果
+.I 类型
+为
+.BR none ，
+则禁用输出同步。
+.TP 0.5i
+\fB\-p\fR, \fB\-\-print\-data\-base\fR
+打印从 makefile 中读取的结果数据库（规则和变量值）；
+然后照常执行或按其他指定方式执行。
+这也会打印由
+.B \-v
+开关（见下文）提供的版本信息。
+要仅打印数据库而不尝试重建任何文件，使用
+.IR "make \-p \-f/dev/null" 。
+.TP 0.5i
+\fB\-q\fR, \fB\-\-question\fR
+"问题模式"。
+不运行任何命令，也不打印任何内容；只返回一个退出状态：
+如果指定的目标已经是最新的则为零，否则为非零。
+.TP 0.5i
+\fB\-r\fR, \fB\-\-no\-builtin\-rules\fR
+取消使用内置的隐式规则。
+同时清除后缀规则的默认后缀列表。
+.TP 0.5i
+\fB\-R\fR, \fB\-\-no\-builtin\-variables\fR
+不定义任何内置变量。
+.TP 0.5i
+\fB\-s\fR, \fB\-\-silent\fR, \fB\-\-quiet\fR
+静默操作；不打印正在执行的命令。
+.TP 0.5i
+.B \-\-no\-silent
+取消 \fB\-s\fR 选项的效果。
+.TP 0.5i
+\fB\-S\fR, \fB\-\-no\-keep\-going\fR, \fB\-\-stop\fR
+取消
+.B \-k
+选项的效果。
+.TP 0.5i
+\fB\-t\fR, \fB\-\-touch\fR
+接触文件（将它们标记为最新而不实际更改它们），
+而不是运行它们的命令。
+这用于假装命令已经执行，以欺骗未来的
+.B make
+调用。
+.TP 0.5i
+.B \-\-trace
+打印每个目标的处理信息（目标被重建的原因以及重建它所运行的命令）。
+.TP 0.5i
+\fB\-v\fR, \fB\-\-version\fR
+打印
+.B make
+程序的版本，以及版权信息、作者列表和无担保声明。
+.TP 0.5i
+\fB\-w\fR, \fB\-\-print\-directory\fR
+在其他处理之前和之后打印包含当前工作目录的消息。
+这对于追踪复杂的递归
+.B make
+命令嵌套中的错误可能很有用。
+.TP 0.5i
+.B \-\-no\-print\-directory
+关闭
+.BR \-w ，
+即使它是隐式打开的。
+.TP 0.5i
+.BI \-\-shuffle "[=模式]"
+启用目标和必备条件顺序的随机重排。
+.I 模式
+可以是
+.I none
+（禁用随机模式）、
+.I random
+（以随机顺序重排必备条件）、
+.I reverse
+（以逆序考虑必备条件），
+或者是一个整数
+.I <种子>
+，使用指定的种子值启用
+.I random
+模式。如果省略
+.IR 模式 ，
+默认值为
+.IR random 。
+.TP 0.5i
+\fB\-W\fR \fI文件\fR, \fB\-\-what\-if\fR=\fI文件\fR, \fB\-\-new\-file\fR=\fI文件\fR, \fB\-\-assume\-new\fR=\fI文件\fR
+假装目标
+.I 文件
+刚刚被修改过。
+当与
+.B \-n
+标志一起使用时，它会显示如果你修改了该文件会发生什么。
+如果不带
+.BR \-n ，
+这几乎等同于在运行
+.B make
+之前对该文件执行
+.I touch
+命令，只是修改时间仅在
+.B make
+的"想象"中被改变。
+.TP 0.5i
+.B \-\-warn\-undefined\-variables
+当引用未定义的变量时发出警告。
+.SH "退出状态"
+GNU Make 在所有 makefile 被成功解析且构建的目标无一失败时退出状态为零。
+如果使用了
+.B \-q
+标志且
+.B make
+判断某个目标需要重建，则返回状态一。
+如果遇到任何错误，则返回状态二。
+.SH "参见"
+.B make
+的完整文档以 Texinfo 手册的形式维护。如果你的系统上正确安装了
+.B info
+和
+.B make
+程序，命令
+.IP
+.B info make
+.PP
+应该可以让你访问完整的手册。
+.SH BUGS
+请参见
+.I "The GNU Make Manual"
+中的 "Problems and Bugs" 章节。
+.SH 作者
+本手册页由斯坦福大学的 Dennis Morse 贡献。
+后续更新由 Mike Frysinger 贡献。由 Roland McGrath 重新整理。由 Paul Smith 维护。
+.SH "版权"
+版权所有 \(co 1992-1993, 1996-2023 Free Software Foundation, Inc.
+本文件是
+.IR "GNU Make"
+的一部分。
+.LP
+GNU Make 是自由软件；你可以根据自由软件基金会发布的 GNU 通用公共许可证
+的条款重新分发和/或修改它；可以是许可证的第 3 版，或（由你选择）任何后续版本。
+.LP
+GNU Make 的分发是希望它有用，但没有任何担保；甚至没有适销性或
+特定用途适用性的默示担保。有关详细信息，请参阅 GNU 通用公共许可证。
+.LP
+你应该已经随本程序收到了 GNU 通用公共许可证的副本。
+如果没有，请参阅
+.IR https://www.gnu.org/licenses/ 。
+.SH "[中文版最新更新]"
+.BR 2026.07.12
+.SH "[中文版维护人]"
+.SH "[中国 Linux 论坛中文手册页翻译计划]"
+.BI https://github.com/man-pages-zh/manpages-zh
