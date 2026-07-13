@@ -1,0 +1,506 @@
+'\" t
+.\"     Title: column
+.\"    Author: [see the "AUTHOR(S)" section]
+.\" Generator: Asciidoctor 2.0.26
+.\"      Date: 2026-06-16
+.\"    Manual: 用户命令
+.\"    Source: util-linux 2.42.2
+.\"  Language: Chinese (Simplified)
+.\"
+.TH "COLUMN" "1" "2026-06-16" "util\-linux 2.42.2" "用户命令"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "名称"
+column \- 将列表格式化为多列
+.SH "概述"
+.sp
+\fBcolumn\fP [选项] [\fI文件\fP .\|.\|.]
+.SH "描述"
+.sp
+\fBcolumn\fP 工具将其输入格式化为多列。支持三种模式：
+.sp
+\fB先填满列再填行\fP
+.RS 4
+这是默认模式（为向后兼容而保留）。
+.RE
+.sp
+\fB先填满行再填列\fP
+.RS 4
+此模式通过 \fB\-x, \-\-fillrows\fP 选项启用。
+.RE
+.sp
+\fB创建表格\fP
+.RS 4
+确定输入包含的列数并创建表格。
+此模式通过 \fB\-t\fP/\fB\-\-table\fP 选项启用。
+输出在交互模式中对齐到终端宽度，在非交互模式中对齐到 80 列
+（更多细节请参见 \fB\-\-output\-width\fP）。
+可以通过使用各种 \fB\-\-table\-\fP* 选项来应用自定义格式。
+.RE
+.sp
+输入来自 \fI文件\fP，否则来自标准输入。空行被忽略，所有无效的多字节序列都用 x<hex> 约定编码。
+.SH "选项"
+.sp
+下面的 \fB\-\-table\-\fP* 选项的 \fIcolumns\fP 参数是一个逗号分隔的列表，包含
+通过 \fB\-\-table\-columns\fP \fIname1\fP\fB,\fP\fIname2\fP\fB,\fP.\|.\|. 定义的用户提供的名称，
+或按输入中出现的列索引（从 1 开始），
+或通过 \fB\-\-table\-column\fP 属性定义的名称。
+可以混合使用名称和索引。特殊占位符 \*(Aq0\*(Aq（例如 \-R0）可以
+用于指定所有列，\*(Aq\-1\*(Aq（例如 \-R \-1）用于指定最后一列可见列。
+在通过索引指定列时，可以使用范围，如 \*(Aq1\-5\*(Aq。
+.sp
+\fB\-J, \-\-json\fP
+.RS 4
+使用 JSON 输出格式打印表格。选项 \fB\-\-table\-columns\fP 是必需的，建议使用 \fB\-\-table\-name\fP 选项。
+.RE
+.sp
+\fB\-c, \-\-output\-width\fP \fI宽度\fP
+.RS 4
+输出格式化为指定的字符宽度。
+注意，默认情况下输入长度超过 \fI宽度\fP 时不会被截断。
+默认值在交互模式下为终端宽度，在非交互模式下为 80 列。
+列标题从不截断。
+.sp
+占位符 \fBunlimited\fP（或 \fB0\fP）可用于防止限制输出宽度。
+在将输出重定向到文件时建议使用此选项。
+.sp
+（此选项的原长名称是 \fB\-\-columns\fP；自 v2.30 起已弃用。）
+.RE
+.sp
+\fB\-d, \-\-table\-noheadings\fP
+.RS 4
+不打印表头。此选项允许在命令行上指定用户提供的列名，但在打印表格时隐藏表头。
+.RE
+.sp
+\fB\-o, \-\-output\-separator\fP \fI字符串\fP
+.RS 4
+表格输出的列分隔符（默认为两个空格）。
+.RE
+.sp
+\fB\-s, \-\-input\-separator, \-\-separator\fP \fI分隔符\fP
+.RS 4
+可能的输入项分隔符（默认为空白字符）。
+.RE
+.sp
+\fB\-S, \-\-use\-spaces\fP \fI数量\fP
+.RS 4
+在非表格模式下，使用空格而非制表符来对齐列。此选项指定分隔两列的最小空格数。
+.RE
+.sp
+\fB\-t, \-\-table\fP
+.RS 4
+确定输入包含的列数并创建表格。列默认以空白字符分隔，或使用 \fB\-\-output\-separator\fP 选项提供的字符分隔。表格输出适用于美化打印。
+.RE
+.sp
+\fB\-\-table\-colorscheme\fP \fI名称\fP
+.RS 4
+指定颜色方案。默认名称为 "column"。更多详情请参见 \fBCOLORS\fP 一节。
+.RE
+.sp
+\fB\-C, \-\-table\-column\fP \fI属性\fP
+.RS 4
+使用逗号分隔的属性列表定义列。
+此选项可以多次使用，每次使用定义一个列。
+属性可以替代某些 \fB\-\-table\-\fP* 选项：例如，
+\fB\-\-table\-column name=FOO,right\fP 定义一个文本右对齐的列。
+此选项与 \fB\-N\fP/\fB\-\-table\-columns\fP 互斥。
+.sp
+支持的属性：
+.sp
+\fBname=\fP\fI字符串\fP
+.RS 4
+列名。
+.RE
+.sp
+\fBtrunc\fP
+.RS 4
+必要时截断列文本。与 \fB\-\-table\-truncate\fP 相同。注意列标题从不截断，并且它是列的最小宽度。
+.RE
+.sp
+\fBtree\fP
+.RS 4
+使用此列进行树状输出。更多详情请参见 \fB\-\-tree\fP。
+.RE
+.sp
+\fBright\fP
+.RS 4
+右对齐文本。与 \fB\-\-table\-right\fP 相同。
+.RE
+.sp
+\fBwidth=\fP\fI数字\fP
+.RS 4
+列宽度。仅作为提示使用。要强制执行，请同时指定 \fBstrictwidth\fP 属性。实际最小宽度是列标题宽度。
+.RE
+.sp
+\fBstrictwidth\fP
+.RS 4
+严格遵循 \fBwidth=\fP 设置列的最小尺寸。如果输出宽度提供足够空间，列可以更大。
+.RE
+.sp
+\fBnoextremes\fP
+.RS 4
+忽略异常长的内容宽度。更多详情请参见 \fB\-\-table\-noextreme\fP。
+.RE
+.sp
+\fBhidden\fP
+.RS 4
+不打印该列。更多详情请参见 \fB\-\-table\-hide\fP。
+.RE
+.sp
+\fBwrap\fP
+.RS 4
+允许在必要时对长文本使用多行单元格。注意列标题从不换行，并确定列的最小宽度。更多详情请参见 \fB\-\-table\-wrap\fP。
+.RE
+.sp
+\fBwrapnl\fP
+.RS 4
+在换行符处换行；单元格数据中的换行符被视为换行。
+.RE
+.sp
+\fBwrapzero\fP
+.RS 4
+在单元格数据中的零（NUL）字符处换行。
+.RE
+.sp
+\fBjson=\fP\fI类型\fP
+.RS 4
+定义 JSON 输出的列类型。支持的类型有 \fBstring\fP、\fBnumber\fP、\fBfloat\fP、
+\fBarray\-string\fP、\fBarray\-number\fP 和 \fBboolean\fP。
+.RE
+.sp
+\fBcolor=\fP\fI名称\fP
+.RS 4
+定义终端输出时列的颜色。\fI名称\fP 是颜色名称
+(black, blink, blue, bold, brown, cyan, darkgray, gray, green, halfbright,
+lightblue, lightcyan, lightgray, lightgreen, lightmagenta, lightred, magenta,
+red, reset, reverse, 和 yellow) 或以分号分隔的 ANSI 颜色序列号，
+但不带 \*(AqESC[\*(Aq 前缀和 \*(Aqm\*(Aq 后缀。例如，"37;41"
+定义红色背景和白色前景的序列。更多详情请参见 \fBCOLORS\fP 一节。
+.RE
+.sp
+\fBcolorkey=\fP\fI名称\fP
+.RS 4
+引用颜色方案中定义的颜色。请参见 \fB\-\-table\-colorscheme\fP。
+.RE
+.sp
+\fBheadercolor=\fP\fI名称\fP
+.RS 4
+与 \fBcolor=\fP 类似，但仅为列标题定义颜色。
+.RE
+.sp
+\fBheadercolorkey=\fP\fI名称\fP
+.RS 4
+引用颜色方案中为标题定义的颜色。请参见 \fB\-\-table\-colorscheme\fP。
+.RE
+.RE
+.sp
+\fB\-N, \-\-table\-columns\fP \fI名称\fP
+.RS 4
+使用逗号分隔的列表指定列名。名称用于表格表头
+和选项参数中的列引用。另请参见 \fB\-\-table\-column\fP。
+.RE
+.sp
+\fB\-l, \-\-table\-columns\-limit\fP \fI数量\fP
+.RS 4
+指定输入列的最大数量。如果限制小于输入数据中的列数，则最后一列将包含所有剩余的行数据。
+.RE
+.sp
+\fB\-R, \-\-table\-right\fP \fI列\fP
+.RS 4
+将指定列的文本右对齐。
+.RE
+.sp
+\fB\-T, \-\-table\-truncate\fP \fI列\fP
+.RS 4
+指定在必要时可以截断文本的列，否则很长的表条目可能会打印在多行上。
+.RE
+.sp
+\fB\-E, \-\-table\-noextreme\fP \fI列\fP
+.RS 4
+指定在计算列宽时应忽略超长内容的列。此选项影响宽度计算和表格格式化，但不影响打印的文本。
+.sp
+此选项默认对最后一列可见列激活。
+.RE
+.sp
+\fB\-e, \-\-table\-header\-repeat\fP
+.RS 4
+每页打印表头行。
+.RE
+.sp
+\fB\-K, \-\-table\-header\-as\-columns\fP
+.RS 4
+使用第一行输入作为表格表头。此选项与 \fB\-\-table\-columns\fP 和 \fB\-\-table\-column\fP 互斥。
+.RE
+.sp
+\fB\-W, \-\-table\-wrap\fP \fI列\fP
+.RS 4
+指定允许对长文本使用多行单元格的列。默认情况下，文本根据列宽换行。使用 \fB\-\-wrap\-separator\fP 在自定义分隔符处换行。注意列标题从不换行，并确定列的最小宽度。
+.RE
+.sp
+\fB\-\-wrap\-separator\fP \fI字符串\fP
+.RS 4
+将 \fI字符串\fP 作为启用了换行的列内文本换行的分隔符。显示文本时，分隔符会被替换为换行符。此选项需要表格模式和启用了换行的列（参见 \fB\-\-table\-wrap\fP）。例如，使用 \f(CR|\fP 可以在列数据中的管道符处换行。
+.RE
+.sp
+\fB\-H, \-\-table\-hide\fP \fI列\fP
+.RS 4
+不打印指定的列。特殊占位符 \*(Aq\fB\-\fP\*(Aq 可用于隐藏所有未命名的列（参见 \fB\-\-table\-columns\fP）。
+.RE
+.sp
+\fB\-O, \-\-table\-order\fP \fI列\fP
+.RS 4
+指定输出列的顺序。
+.RE
+.sp
+\fB\-n, \-\-table\-name\fP \fI名称\fP
+.RS 4
+指定 JSON 输出中使用的表格名称。默认为 "table"。
+.RE
+.sp
+\fB\-m, \-\-table\-maxout\fP
+.RS 4
+在输出上填满所有可用空间。
+.RE
+.sp
+\fB\-L, \-\-keep\-empty\-lines\fP
+.RS 4
+保留输入中仅含空白字符的行。默认忽略所有空行。此选项的原名是 \fB\-\-table\-empty\-lines\fP，但后来被弃用，因为该名称给人以该选项仅适用于表格模式的错误印象。
+.RE
+.sp
+\fB\-r, \-\-tree\fP \fI列\fP
+.RS 4
+指定用于树状输出的列。注意循环依赖和子父关系中的其他异常会被静默忽略。
+.RE
+.sp
+\fB\-i, \-\-tree\-id\fP \fI列\fP
+.RS 4
+指定包含每行唯一子节点 ID 的列，用于子父关系。
+.RE
+.sp
+\fB\-p, \-\-tree\-parent\fP \fI列\fP
+.RS 4
+指定包含每行父节点 ID 的列，用于子父关系。
+.RE
+.sp
+\fB\-x, \-\-fillrows\fP
+.RS 4
+先填满行再填列。
+.RE
+.sp
+\fB\-\-color\fP[\fB=\fP\fIwhen\fP]
+.RS 4
+为输出着色。可选参数 \fIwhen\fP 可以是 \fBauto\fP、\fBnever\fP 或 \fBalways\fP。如果省略 \fIwhen\fP 参数，默认为 \fBauto\fP。颜色可以被禁用；当前内置默认值请参见 \fB\-\-help\fP 输出。另请参见 \fBCOLORS\fP 一节。
+.RE
+.sp
+\fB\-h\fP, \fB\-\-help\fP
+.RS 4
+显示帮助文本并退出。
+.RE
+.sp
+\fB\-V\fP, \fB\-\-version\fP
+.RS 4
+显示版本信息并退出。
+.RE
+.SH "颜色"
+.sp
+输出着色由 \fBterminal\-colors.d\fP(5) 功能实现。可以通过空文件禁用隐式着色：
+.RS 3
+.ll -.6i
+.sp
+\fI/etc/terminal\-colors.d/column.disable\fP
+.br
+.RE
+.ll
+.sp
+针对 \fBcolumn\fP 命令，或针对所有工具：
+.RS 3
+.ll -.6i
+.sp
+\fI/etc/terminal\-colors.d/disable\fP
+.br
+.RE
+.ll
+.sp
+自版本 2.41 起，$NO_COLOR 环境变量也被支持用于禁用输出着色，除非通过命令行选项显式启用。
+.sp
+用户特定的 \fI$XDG_CONFIG_HOME/terminal\-colors.d\fP
+或 \fI$HOME/.config/terminal\-colors.d\fP 会覆盖全局设置。
+.sp
+注意输出着色可能默认启用，在这种情况下
+\fIterminal\-colors.d\fP 目录可能尚未存在。
+.sp
+默认颜色方案名称为 "column"，可以通过以下方式覆盖：
+.RS 3
+.ll -.6i
+.sp
+\fB\-\-table\-colorscheme name\fP
+.br
+.RE
+.ll
+.sp
+然后可以在 \fI/etc/terminal\-colors.d/\fP、
+\fI$XDG_CONFIG_HOME/terminal\-colors.d\fP 或 \fI$HOME/.config/terminal\-colors.d/\fP 中使用 \fIname\fP[.disable|enable|scheme] 文件。
+.sp
+颜色方案中的逻辑颜色名称（键）可以通过列属性
+\fBcolorkey=\fP 和 \fBheadercolorkey=\fP 引用。例如：
+.sp
+.if n .RS 4
+.nf
+.fam C
+echo \*(Aqimportant red\*(Aq\&           > ~/.config/terminal\-colors.d/cooltable.scheme
+echo \*(Aqimportant\-header 37;41\*(Aq >> ~/.config/terminal\-colors.d/cooltable.scheme
+echo \-e "a b c\(rsnaa bb cc\(rsnaaa bbb ccc" | column \-t \(rs
+        \-\-table\-colorscheme=cooltable \(rs
+        \-C name=AAA,colorkey=important,headercolorkey=important\-header \(rs
+        \-C name=BBB,color=magenta,headercolor=cyan \(rs
+        \-C name=CCC,color=green
+.fam
+.fi
+.if n .RE
+.sp
+这将创建一个名为 "cooltable" 的颜色方案，并根据方案中的键为第一列
+标题和数据着色。其他两列将使用直接颜色名称着色。
+.SH "环境变量"
+.sp
+\fBCOLUMNS\fP
+.RS 4
+如果没有其他可用信息，用于确定屏幕大小。
+.RE
+.sp
+\fBLIBSMARTCOLS_DEBUG\fP=all
+.RS 4
+启用 libsmartcols 调试输出。
+.RE
+.sp
+\fBLIBSMARTCOLS_DEBUG_PADDING\fP=on
+.RS 4
+使用可见的填充字符。
+.RE
+.SH "历史"
+.sp
+\fBcolumn\fP 命令出现在 4.3BSD\-Reno 中。
+.SH "错误"
+.sp
+版本 2.23 将 \fB\-s\fP 选项改为非贪婪模式，例如：
+.sp
+.if n .RS 4
+.nf
+.fam C
+printf "a:b:c\(rsn1::3\(rsn" | column \-t \-s \*(Aq:\*(Aq
+.fam
+.fi
+.if n .RE
+.sp
+旧输出：
+.sp
+.if n .RS 4
+.nf
+.fam C
+a\&  b\&  c
+1\&  3
+.fam
+.fi
+.if n .RE
+.sp
+新输出（自 util\-linux 2.23 起）：
+.sp
+.if n .RS 4
+.nf
+.fam C
+a\&  b\&  c
+1\&     3
+.fam
+.fi
+.if n .RE
+.sp
+此工具的历史版本指出"默认先填满行再填列"，并且 \fB\-x\fP 选项反转此行为。此措辞未反映实际行为，现已被纠正（见上文）。其他 \fBcolumn\fP 实现可能继续使用旧文档，但行为在任何情况下都应相同。
+.SH "示例"
+.sp
+打印带有表头的 fstab 并将数字右对齐：
+.sp
+.if n .RS 4
+.nf
+.fam C
+sed \*(Aqs/#.*//\*(Aq /etc/fstab | column \-\-table \-\-table\-columns SOURCE,TARGET,TYPE,OPTIONS,FREQ,PASS \-\-table\-right FREQ,PASS
+.fam
+.fi
+.if n .RE
+.sp
+打印 fstab 并隐藏未命名的列：
+.sp
+.if n .RS 4
+.nf
+.fam C
+sed \*(Aqs/#.*//\*(Aq /etc/fstab | column \-\-table \-\-table\-columns SOURCE,TARGET,TYPE \-\-table\-hide \-
+.fam
+.fi
+.if n .RE
+.sp
+打印树状结构：
+.sp
+.if n .RS 4
+.nf
+.fam C
+echo \-e \*(Aq1 0 A\(rsn2 1 AA\(rsn3 1 AB\(rsn4 2 AAA\(rsn5 2 AAB\*(Aq | column \-\-tree\-id 1 \-\-tree\-parent 2 \-\-tree 3
+1\&  0\&  A
+2\&  1\&  |\-AA
+4\&  2\&  | |\-AAA
+5\&  2\&  | `\-AAB
+3\&  1\&  `\-AB
+.fam
+.fi
+.if n .RE
+.sp
+使用自定义换行分隔符打印表格：
+.sp
+.if n .RS 4
+.nf
+.fam C
+echo \-e \*(AqName:Description\(rsnJohn:A|software|developer\(rsnJane:A|data|scientist\*(Aq | column \-\-table \-\-separator \*(Aq:\*(Aq \-\-table\-wrap 2 \-\-wrap\-separator \*(Aq|\*(Aq
+Name\&  Description
+John\&  A
+      software
+      developer
+Jane\&  A
+      data
+      scientist
+.fam
+.fi
+.if n .RE
+.SH "参见"
+.sp
+\fBcolrm\fP(1),
+\fBls\fP(1),
+\fBpaste\fP(1),
+\fBsort\fP(1)
+.SH "报告错误"
+.sp
+请通过 \c
+.URL "https://github.com/util\-linux/util\-linux/issues" "issue tracker" " 报告错误。"
+.SH "可用性"
+.sp
+\fBcolumn\fP 命令是 util\-linux 软件包的一部分，可从 \c
+.URL "https://www.kernel.org/pub/linux/utils/util\-linux/" "Linux Kernel Archive" " 下载。"
+.SH "[中文版维护人]"
+.B Aurolystant
+.SH "[中文版最新更新]"
+.BR 2026.07.13
+.SH "[中国 Linux 论坛中文手册页翻译计划]"
+.BI https://github.com/man-pages-zh/manpages-zh

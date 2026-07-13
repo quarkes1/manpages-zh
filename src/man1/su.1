@@ -1,0 +1,321 @@
+'\" t
+.\"     Title: su
+.\"    Author: [see the "AUTHOR(S)" section]
+.\" Generator: Asciidoctor 2.0.26
+.\"      Date: 2026-06-16
+.\"    Manual: 用户命令
+.\"    Source: util-linux 2.42.2
+.\"  Language: Chinese (Simplified)
+.\"
+.TH "SU" "1" "2026-06-16" "util\-linux 2.42.2" "用户命令"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "名称"
+su \- 以替代用户和组 ID 运行命令
+.SH "概述"
+.sp
+\fBsu\fP [选项] [\fB\-\fP] [\fI用户\fP|\fIUID\fP [\fI参数\fP.\|.\|.]]
+.SH "描述"
+.sp
+\fBsu\fP 允许以替代用户和组 ID 运行命令。
+.sp
+未指定 \fI用户\fP 时，\fBsu\fP 默认以 \fIroot\fP 身份运行交互式 shell。指定 \fI用户\fP 时，可以提供额外的 \fI参数\fP，这些参数将被传递给 shell。
+.sp
+为了向后兼容，\fBsu\fP 默认不更改当前目录，仅设置环境变量 \fBHOME\fP 和 \fBSHELL\fP（如果目标 \fI用户\fP 不是 root，还会设置 \fBUSER\fP 和 \fBLOGNAME\fP）。推荐始终使用 \fB\-\-login\fP 选项（而不是其快捷方式 \fB\-\fP）以避免混合环境带来的副作用。
+.sp
+此版本的 \fBsu\fP 使用 PAM 进行认证、账户和会话管理。其他 \fBsu\fP 实现中的某些配置选项（例如支持 wheel 组）需要通过 PAM 进行配置。
+.sp
+\fBsu\fP 主要设计用于非特权用户，对于特权用户（例如由 root 执行的脚本），推荐使用非 set\-user\-ID 命令 \fBrunuser\fP(1)，它不需要认证并提供单独的 PAM 配置。如果完全不需要 PAM 会话，推荐使用 \fBsetpriv\fP(1) 命令。
+.sp
+注意 \fBsu\fP 在所有情况下都使用 PAM (\fBpam_getenvlist\fP(3)) 进行最终的环境修改。诸如 \fB\-\-login\fP 和 \fB\-\-preserve\-environment\fP 等命令行选项会在 PAM 修改环境之前影响环境。
+.sp
+自版本 2.38 起，\fBsu\fP 会重置进程资源限制 RLIMIT_NICE、RLIMIT_RTPRIO、RLIMIT_FSIZE、RLIMIT_AS 和 RLIMIT_NOFILE。
+.SH "选项"
+.sp
+\fB\-c\fP, \fB\-\-command\fP \fI命令\fP
+.RS 4
+通过 \fB\-c\fP 选项将 \fI命令\fP 传递给 shell。
+通过 \fBsetsid\fP(2) 创建新会话。要保持同一会话，请参见 \fB\-\-session\-command\fP。
+.RE
+.sp
+\fB\-f\fP, \fB\-\-fast\fP
+.RS 4
+将 \fB\-f\fP 传递给 shell，这可能有用也可能没用，取决于 shell。
+.RE
+.sp
+\fB\-g\fP, \fB\-\-group\fP \fI组\fP
+.RS 4
+指定主组。此选项仅 root 用户可用。
+.RE
+.sp
+\fB\-G\fP, \fB\-\-supp\-group\fP \fI组\fP
+.RS 4
+指定附加组。此选项仅 root 用户可用。如果未指定 \fB\-\-group\fP 选项，则第一个指定的附加组也用作主组。
+.RE
+.sp
+\fB\-\fP, \fB\-l\fP, \fB\-\-login\fP
+.RS 4
+以登录 shell 方式启动，环境类似于真实登录。
+.sp
+注意，在基于 \fBsystemd\fP(1) 的系统上，新会话可能被定义为系统的真实入口点。然而，\fBsu\fP 从 PAM 的角度来看并不会创建真实会话。您需要使用 \fBsystemd\-run\fP(1) 或 \fBmachinectl\fP(1) 等工具来启动完整的真实会话。
+.sp
+\fBsu\fP 执行以下操作：
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+清除除 \fBTERM\fP、\fBCOLORTERM\fP、\fBNO_COLOR\fP 及 \fB\-\-whitelist\-environment\fP 指定的变量之外的所有环境变量
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+初始化环境变量 \fBHOME\fP、\fBSHELL\fP、\fBUSER\fP、\fBLOGNAME\fP 和 \fBPATH\fP
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+切换到目标用户的家目录
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+将 shell 的 argv[0] 设置为 \*(Aq\fB\-\fP\*(Aq 以使其成为登录 shell
+.RE
+.RE
+.sp
+\fB\-m\fP, \fB\-p\fP, \fB\-\-preserve\-environment\fP
+.RS 4
+保留整个环境，即不设置 \fBHOME\fP、\fBSHELL\fP、\fBUSER\fP 或 \fBLOGNAME\fP。如果指定了 \fB\-\-login\fP 选项，则忽略此选项。
+.RE
+.sp
+\fB\-P\fP, \fB\-\-pty\fP
+.RS 4
+为会话创建伪终端。独立的终端提供了更好的安全性，因为用户不与原始会话共享终端。请阅读下方关于 TIOCSTI 漏洞的安全建议。
+.sp
+整个会话也可以放入后台运行（例如，\fBsu \-\-pty\fP \fB\-\fP \fI用户\fP \fB\-c\fP \fI应用\fP \fB&\fP）。如果启用了伪终端，则 \fBsu\fP 充当会话之间的代理（同步 stdin 和 stdout）。
+.sp
+此功能主要设计用于交互式会话。如果标准输入不是终端，而是例如管道（如 \fBecho "date" | su \-\-pty\fP），则伪终端的 \fBECHO\fP 标志会被禁用以避免混乱的输出。
+.RE
+.sp
+\fB\-s\fP, \fB\-\-shell\fP \fIshell\fP
+.RS 4
+运行指定的 \fIshell\fP 而不是默认 shell。如果目标用户具有受限 shell（即未列在 \fI/etc/shells\fP 中），则 \fB\-\-shell\fP 选项和 \fBSHELL\fP 环境变量会被忽略，除非调用用户是 root。
+.sp
+要运行的 shell 按以下规则顺序选择：
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+用 \fB\-\-shell\fP 指定的 shell
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+环境变量 \fBSHELL\fP 中指定的 shell（如果使用了 \fB\-\-preserve\-environment\fP 选项）
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+目标用户 passwd 条目中列出的 shell
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+/bin/sh
+.RE
+.RE
+.sp
+\fB\-\-session\-command=\fP\fI命令\fP
+.RS 4
+与 \fB\-c\fP 相同，但不创建新会话。（不鼓励使用。）
+请阅读下方关于 TIOCSTI 漏洞的安全建议。
+.RE
+.sp
+\fB\-T\fP, \fB\-\-no\-pty\fP
+.RS 4
+不创建伪终端，与 \fB\-\-pty\fP 和 \fB\-P\fP 相反。
+请阅读下方关于 TIOCSTI 漏洞的安全建议。
+.RE
+.sp
+\fB\-w\fP, \fB\-\-whitelist\-environment\fP \fI列表\fP
+.RS 4
+在清除 \fB\-\-login\fP 的环境时，不重置逗号分隔的 \fI列表\fP 中指定的环境变量。对于环境变量 \fBHOME\fP、\fBSHELL\fP、\fBUSER\fP、\fBLOGNAME\fP 和 \fBPATH\fP，白名单被忽略。
+.RE
+.sp
+\fB\-h\fP, \fB\-\-help\fP
+.RS 4
+显示帮助文本并退出。
+.RE
+.sp
+\fB\-V\fP, \fB\-\-version\fP
+.RS 4
+显示版本信息并退出。
+.RE
+.SH "信号"
+.sp
+接收到 \fBSIGINT\fP、\fBSIGQUIT\fP 或 \fBSIGTERM\fP 中的任何一个时，\fBsu\fP 会终止其子进程，然后以接收到的信号终止自身。子进程通过 \fBSIGTERM\fP 终止，如果尝试不成功且在 2 秒延迟后，子进程会被 \fBSIGKILL\fP 杀死。
+.SH "配置文件"
+.sp
+\fBsu\fP 读取 \fI/etc/default/su\fP 和 \fI/etc/login.defs\fP 配置文件。以下配置项与 \fBsu\fP 相关：
+.sp
+\fBFAIL_DELAY\fP（数字）
+.RS 4
+认证失败时的延迟秒数。该数字必须为非负整数。
+.RE
+.sp
+\fBENV_PATH\fP（字符串）
+.RS 4
+定义普通用户的 \fBPATH\fP 环境变量。默认值为 \fI/usr/local/bin:/bin:/usr/bin\fP。
+.RE
+.sp
+\fBENV_ROOTPATH\fP（字符串）、\fBENV_SUPATH\fP（字符串）
+.RS 4
+定义 root 的 \fBPATH\fP 环境变量。\fBENV_SUPATH\fP 优先。默认值为 \fI/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin\fP。
+.RE
+.sp
+\fBALWAYS_SET_PATH\fP（布尔值）
+.RS 4
+如果设置为 \fIyes\fP 且未指定 \fB\-\-login\fP 和 \fB\-\-preserve\-environment\fP，则 \fBsu\fP 会初始化 \fBPATH\fP。
+.sp
+在将 \fI/bin\fP 和 \fI/sbin\fP 合并到 \fI/usr\fP 的系统中，环境变量 \fBPATH\fP 可能不同；此变量也受 \fB\-\-login\fP 命令行选项和 PAM 系统设置（例如 \fBpam_env\fP(8)）的影响。
+.RE
+.SH "退出状态"
+.sp
+\fBsu\fP 通常返回它所执行的命令的退出状态。如果命令被信号杀死，\fBsu\fP 返回信号编号加 128。
+.sp
+由 \fBsu\fP 自身生成的退出状态：
+.sp
+1
+.RS 4
+执行请求的命令之前的一般性错误
+.RE
+.sp
+126
+.RS 4
+无法执行请求的命令
+.RE
+.sp
+127
+.RS 4
+未找到请求的命令
+.RE
+.SH "文件"
+.sp
+\fI/etc/pam.d/su\fP
+.RS 4
+默认 PAM 配置文件
+.RE
+.sp
+\fI/etc/pam.d/su\-l\fP
+.RS 4
+指定了 \fB\-\-login\fP 时的 PAM 配置文件
+.RE
+.sp
+\fI/etc/default/su\fP
+.RS 4
+命令特定的 logindef 配置文件
+.RE
+.sp
+\fI/etc/login.defs\fP
+.RS 4
+全局 logindef 配置文件
+.RE
+.SH "安全注意"
+.sp
+如果 \fBsu\fP 与原始会话共享终端，则可能容易受到通过 TIOCSTI/TIOCLINUX ioctl 命令注入进行特权提升的攻击。有两种内置的防止方法：要么使用带有 \fB\-c\fP 选项的 \fBsu\fP，它通过 \fBsetsid\fP(2) 启动没有控制终端的新会话；要么，如果您的使用场景需要控制终端（例如交互式会话），您可以使用 \fB\-\-pty\fP 或 \fB\-P\fP 选项指示 \fBsu\fP 使用伪终端。
+.sp
+出于安全原因，\fBsu\fP 始终将失败的登录尝试记录到 \fIbtmp\fP 文件，但根本不写入 \fIlastlog\fP 文件。此解决方案可用于通过 PAM 配置控制 \fBsu\fP 行为。如果您想使用 \fBpam_lastlog\fP(8) 模块打印关于失败登录尝试的警告消息，则 \fBpam_lastlog\fP(8) 必须配置为同时更新 \fIlastlog\fP 文件。例如：
+.RS 3
+.ll -.6i
+.sp
+session required pam_lastlog.so nowtmp
+.br
+.RE
+.ll
+.SH "历史"
+.sp
+此 \fBsu\fP 命令源自 coreutils 的 \fBsu\fP，后者基于 David MacKenzie 的实现。util\-linux 版本由 Karel Zak 重构。
+.SH "参见"
+.sp
+\fBsetpriv\fP(1),
+\fBlogin.defs\fP(5),
+\fBshells\fP(5),
+\fBpam\fP(8),
+\fBrunuser\fP(1)
+.SH "报告错误"
+.sp
+请通过 \c
+.URL "https://github.com/util\-linux/util\-linux/issues" "issue tracker" " 报告错误。"
+.SH "可用性"
+.sp
+\fBsu\fP 命令是 util\-linux 软件包的一部分，可从 \c
+.URL "https://www.kernel.org/pub/linux/utils/util\-linux/" "Linux Kernel Archive" " 下载。"
+.SH "[中文版维护人]"
+.B Aurolystant
+.SH "[中文版最新更新]"
+.BR 2026.07.13
+.SH "[中国 Linux 论坛中文手册页翻译计划]"
+.BI https://github.com/man-pages-zh/manpages-zh
