@@ -1,0 +1,1791 @@
+'\" t
+.\"     Title: git
+.\"    Author: [参见 "作者" 部分]
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2026-06-29
+.\"    Manual: Git Manual
+.\"    Source: Git 2.55.0
+.\"  Language: Chinese (Simplified)
+.\"
+.TH "GIT" "1" "2026\-06\-29" "Git 2\&.55\&.0" "Git 手册"
+.\" -----------------------------------------------------------------
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.nh
+.ad l
+.\" -----------------------------------------------------------------
+.SH "名字"
+git \- 傻瓜内容跟踪器
+.SH "总览"
+.sp
+.nf
+\fIgit\fR [\-v | \-\-version] [\-h | \-\-help] [\-C <路径>] [\-c <名称>=<值>]
+    [\-\-exec\-path[=<路径>]] [\-\-html\-path] [\-\-man\-path] [\-\-info\-path]
+    [\-p | \-\-paginate | \-P | \-\-no\-pager] [\-\-no\-replace\-objects] [\-\-no\-lazy\-fetch]
+    [\-\-no\-optional\-locks] [\-\-no\-advice] [\-\-bare] [\-\-git\-dir=<路径>]
+    [\-\-work\-tree=<路径>] [\-\-namespace=<名称>] [\-\-config\-env=<名称>=<环境变量>]
+    <命令> [<参数>]
+.fi
+.sp
+.SH "描述"
+.sp
+Git 是一个快速、可扩展的分布式版本控制系统，拥有异常丰富的命令集，既提供高层操作，也能完全访问内部机制。
+.sp
+请参阅 \fBgittutorial\fR(7) 入门，然后参阅 \fBgiteveryday\fR(7) 获取一套实用的最小命令集。\m[blue]\fBGit 用户手册\fR\m[]\&\s-2\u[1]\d\s+2 提供了更深入的介绍。
+.sp
+掌握基本概念后，你可以回到本页面了解 Git 提供了哪些命令。你可以通过 "git help command" 了解各个 Git 命令的更多信息。\fBgitcli\fR(7) 手册页提供了命令行语法的概述。
+.sp
+格式化并带有超链接的最新 Git 文档副本可在 \m[blue]\fBhttps://git\&.github\&.io/htmldocs/git\&.html\fR\m[] 或 \m[blue]\fBhttps://git\-scm\&.com/docs\fR\m[] 查看。
+.SH "选项"
+.PP
+\-v, \-\-version
+.RS 4
+打印 \fIgit\fR 程序所属的 Git 套件版本。
+.sp
+此选项在内部被转换为 \fBgit version ...\fR 并接受与 \fBgit-version\fR(1) 命令相同的选项。如果同时给出了 \fB\-\-help\fR，它优先于 \fB\-\-version\fR。
+.RE
+.PP
+\-h, \-\-help
+.RS 4
+打印总览和最常用命令的列表。如果给出了 \fB\-\-all\fR 或 \fB\-a\fR 选项，则打印所有可用命令。如果指定了 Git 命令名称，此选项将显示该命令的手册页。
+.sp
+还有其他选项可用于控制手册页的显示方式。更多信息请参见 \fBgit-help\fR(1)，因为 \fBgit \-\-help ...\fR 在内部被转换为 \fBgit help ...\fR。
+.RE
+.PP
+\-C <路径>
+.RS 4
+如同 Git 在 \fI<路径>\fR 而非当前工作目录中启动一样运行。当给出多个 \fB\-C\fR 选项时，每个后续的非绝对路径 \fB\-C\fR \fI<路径>\fR 都相对于前一个 \fB\-C\fR \fI<路径>\fR 解释。如果 \fI<路径>\fR 存在但为空（如 \fB\-C\fR ""），则当前工作目录保持不变。
+.sp
+此选项会影响那些期望路径名的选项（如 \fB\-\-git\-dir\fR 和 \fB\-\-work\-tree\fR），这些路径名将相对于 \fB\-C\fR 选项导致的工作目录解释。例如，以下调用是等价的：
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+git \-\-git\-dir=a\&.git \-\-work\-tree=b \-C c status
+git \-\-git\-dir=c/a\&.git \-\-work\-tree=c/b status
+.fi
+.if n \{\
+.RE
+.\}
+.RE
+.PP
+\-c <名称>=<值>
+.RS 4
+向命令传递配置参数。给定的值将覆盖配置文件中的值。<名称> 应采用与 \fIgit config\fR 列出的相同格式（子键用点号分隔）。
+.sp
+注意，在 \fBgit \-c foo\&.bar ...\fR 中省略 \fB=\fR 是允许的，会将 \fBfoo\&.bar\fR 设置为布尔真值（就像配置文件中的 [\fBfoo\fR]\fBbar\fR 一样）。包含等号但值为空（如 \fBgit \-c foo\&.bar= ...\fR）则将 \fBfoo\&.bar\fR 设置为空字符串，\fBgit config \-\-type=bool\fR 会将其转换为 \fBfalse\fR。
+.RE
+.PP
+\-\-config\-env=<名称>=<环境变量>
+.RS 4
+类似于 \fB\-c\fR \fI<名称>\fR\fB=\fR\fI<值>\fR，为配置变量 \fI<名称>\fR 赋值，其中 <环境变量> 是要从中获取值的环境变量名称。与 \fB\-c\fR 不同，这里没有直接将值设置为空字符串的快捷方式，而是必须将环境变量本身设置为空字符串。如果环境变量 \fI<环境变量>\fR 不存在，则报错。\fI<环境变量>\fR 不能包含等号，以避免与包含等号的 \fI<名称>\fR 产生歧义。
+.sp
+这在以下情况下很有用：你想向 git 传递临时的配置选项，但所在操作系统上其他进程可能能够读取你的命令行（例如 \fB/proc/self/cmdline\fR），而无法读取你的环境变量（例如 \fB/proc/self/environ\fR）。这种行为在 Linux 上是默认的，但在你的系统上可能不同。
+.sp
+注意，这可能会增加 \fBhttp\&.extraHeader\fR 等变量的安全性，因为敏感信息是值的一部分，但对于 \fBurl\&.\fR\fI<base>\fR\fB\&.insteadOf\fR 这样的变量则不行，因为敏感信息可以是键的一部分。
+.RE
+.PP
+\-\-exec\-path[=<路径>]
+.RS 4
+指定核心 Git 程序的安装路径。也可以通过设置 GIT_EXEC_PATH 环境变量来控制。如果未给出路径，\fIgit\fR 将打印当前设置然后退出。
+.RE
+.PP
+\-\-html\-path
+.RS 4
+打印 Git HTML 文档的安装路径（不带尾部斜杠）并退出。
+.RE
+.PP
+\-\-man\-path
+.RS 4
+打印此版本 Git 手册页的 manpath（参见 \fBman\fR(\fB1\fR)）并退出。
+.RE
+.PP
+\-\-info\-path
+.RS 4
+打印此版本 Git 的 Info 文件安装路径并退出。
+.RE
+.PP
+\-p, \-\-paginate
+.RS 4
+如果标准输出是终端，则将所有输出管道到 \fIless\fR（或 $PAGER，如果设置了的话）。这将覆盖 \fBpager\&.\fR\fI<cmd>\fR 配置选项（参见下面的"配置机制"部分）。
+.RE
+.PP
+\-P, \-\-no\-pager
+.RS 4
+不将 Git 输出管道到分页器。
+.RE
+.PP
+\-\-git\-dir=<路径>
+.RS 4
+设置仓库（".git" 目录）的路径。也可以通过设置 \fBGIT_DIR\fR 环境变量来控制。可以是绝对路径或相对于当前工作目录的路径。
+.sp
+使用此选项（或 \fBGIT_DIR\fR 环境变量）指定 ".git" 目录的位置将关闭仓库发现机制（该机制会尝试查找包含 ".git" 子目录的目录），并告诉 Git 你处于工作树的顶层。如果你不在工作树的顶层目录中，应使用 \fB\-\-work\-tree=\fR\fI<路径>\fR 选项（或 \fBGIT_WORK_TREE\fR 环境变量）告诉 Git 工作树的顶层在哪里。
+.sp
+如果你只想让 git 如同在 \fI<路径>\fR 中启动一样运行，请使用 \fBgit \-C\fR \fI<路径>\fR。
+.RE
+.PP
+\-\-work\-tree=<路径>
+.RS 4
+设置工作树的路径。可以是绝对路径或相对于当前工作目录的路径。也可以通过设置 GIT_WORK_TREE 环境变量和 core\&.worktree 配置变量来控制（更详细的讨论参见 \fBgit-config\fR(1) 中的 core\&.worktree）。
+.RE
+.PP
+\-\-namespace=<路径>
+.RS 4
+设置 Git 命名空间。更多细节参见 \fBgitnamespaces\fR(7)。等同于设置 \fBGIT_NAMESPACE\fR 环境变量。
+.RE
+.PP
+\-\-bare
+.RS 4
+将仓库视为裸仓库。如果未设置 GIT_DIR 环境变量，则将其设置为当前工作目录。
+.RE
+.PP
+\-\-no\-replace\-objects
+.RS 4
+不使用替换引用来替换 Git 对象。这相当于用任意值导出 \fBGIT_NO_REPLACE_OBJECTS\fR 环境变量。更多信息参见 \fBgit-replace\fR(1)。
+.RE
+.PP
+\-\-no\-lazy\-fetch
+.RS 4
+不按需从 promisor 远程获取缺失的对象。与 \fBgit cat\-file \-e\fR \fI<object>\fR 一起使用可以查看对象是否在本地可用。这相当于将 \fBGIT_NO_LAZY_FETCH\fR 环境变量设置为 \fB1\fR。
+.RE
+.PP
+\-\-no\-optional\-locks
+.RS 4
+不执行需要锁的可选操作。这相当于将 \fBGIT_OPTIONAL_LOCKS\fR 设置为 \fB0\fR。
+.RE
+.PP
+\-\-no\-advice
+.RS 4
+禁用所有建议提示的输出。
+.RE
+.PP
+\-\-literal\-pathspecs
+.RS 4
+按字面量处理路径规范（即不进行 glob 匹配，不使用路径规范魔法）。这相当于将 \fBGIT_LITERAL_PATHSPECS\fR 环境变量设置为 \fB1\fR。
+.RE
+.PP
+\-\-glob\-pathspecs
+.RS 4
+为所有路径规范添加 "glob" 魔法。这相当于将 \fBGIT_GLOB_PATHSPECS\fR 环境变量设置为 \fB1\fR。可以使用路径规范魔法 ":(literal)" 对个别路径规范禁用 glob。
+.RE
+.PP
+\-\-noglob\-pathspecs
+.RS 4
+为所有路径规范添加 "literal" 魔法。这相当于将 \fBGIT_NOGLOB_PATHSPECS\fR 环境变量设置为 \fB1\fR。可以使用路径规范魔法 ":(glob)" 对个别路径规范启用 glob。
+.RE
+.PP
+\-\-icase\-pathspecs
+.RS 4
+为所有路径规范添加 "icase" 魔法。这相当于将 \fBGIT_ICASE_PATHSPECS\fR 环境变量设置为 \fB1\fR。
+.RE
+.PP
+\-\-list\-cmds=<组>[,<组>\&...]
+.RS 4
+按组列出命令。这是一个内部/实验性选项，将来可能更改或移除。支持的组有：builtins、parseopt（使用 parse-options 的内置命令）、deprecated（已弃用的内置命令）、main（libexec 目录中的所有命令）、others（\fB$PATH\fR 中所有以 git- 为前缀的其他命令）、list-<category>（参见 command\-list\&.txt 中的类别）、nohelpers（排除辅助命令）、alias 和 config（从配置变量 completion\&.commands 中检索命令列表）。
+.RE
+.PP
+\-\-attr\-source=<树对象>
+.RS 4
+从 <树对象> 而不是工作树中读取 gitattributes。参见 \fBgitattributes\fR(5)。这相当于设置 \fBGIT_ATTR_SOURCE\fR 环境变量。
+.RE
+.SH "GIT 命令"
+.sp
+我们将 Git 分为高层（"porcelain"）命令和低层（"plumbing"）命令。关于定义命令别名，请参阅 \fBgit-config\fR(1) 中关于 \fBalias\&.*\fR 的描述。关于安装自定义 "git" 子命令，请参阅本手册中 \fIPATH\fR 环境变量的描述。
+.SH "高层命令 (PORCELAIN)"
+.sp
+我们将 porcelain 命令分为主要命令和一些辅助用户工具。
+.SS "主要 porcelain 命令"
+.PP
+\fBgit-add\fR(1)
+.RS 4
+将文件内容添加到索引。
+.RE
+.PP
+\fBgit-am\fR(1)
+.RS 4
+从邮箱中应用一系列补丁。
+.RE
+.PP
+\fBgit-archive\fR(1)
+.RS 4
+从命名的树创建文件归档。
+.RE
+.PP
+\fBgit-backfill\fR(1)
+.RS 4
+在部分克隆中下载缺失的对象。
+.RE
+.PP
+\fBgit-bisect\fR(1)
+.RS 4
+使用二分查找找到引入错误的提交。
+.RE
+.PP
+\fBgit-branch\fR(1)
+.RS 4
+列出、创建或删除分支。
+.RE
+.PP
+\fBgit-bundle\fR(1)
+.RS 4
+通过归档移动对象和引用。
+.RE
+.PP
+\fBgit-checkout\fR(1)
+.RS 4
+切换分支或恢复工作树文件。
+.RE
+.PP
+\fBgit-cherry-pick\fR(1)
+.RS 4
+应用已有提交引入的更改。
+.RE
+.PP
+\fBgit-citool\fR(1)
+.RS 4
+git\-commit 的图形化替代工具。
+.RE
+.PP
+\fBgit-clean\fR(1)
+.RS 4
+从工作树中移除未跟踪的文件。
+.RE
+.PP
+\fBgit-clone\fR(1)
+.RS 4
+将仓库克隆到新目录中。
+.RE
+.PP
+\fBgit-commit\fR(1)
+.RS 4
+记录对仓库的更改。
+.RE
+.PP
+\fBgit-describe\fR(1)
+.RS 4
+基于可用的引用为对象赋予人类可读的名称。
+.RE
+.PP
+\fBgit-diff\fR(1)
+.RS 4
+显示提交之间、提交与工作树之间的更改等。
+.RE
+.PP
+\fBgit-fetch\fR(1)
+.RS 4
+从另一个仓库下载对象和引用。
+.RE
+.PP
+\fBgit-format-patch\fR(1)
+.RS 4
+准备邮件提交用的补丁。
+.RE
+.PP
+\fBgit-gc\fR(1)
+.RS 4
+清理不必要的文件并优化本地仓库。
+.RE
+.PP
+\fBgit-grep\fR(1)
+.RS 4
+打印匹配模式的行。
+.RE
+.PP
+\fBgit-gui\fR(1)
+.RS 4
+Git 的可移植图形界面。
+.RE
+.PP
+\fBgit-history\fR(1)
+.RS 4
+实验性：重写历史。
+.RE
+.PP
+\fBgit-init\fR(1)
+.RS 4
+创建一个空的 Git 仓库或重新初始化现有仓库。
+.RE
+.PP
+\fBgit-log\fR(1)
+.RS 4
+显示提交日志。
+.RE
+.PP
+\fBgit-maintenance\fR(1)
+.RS 4
+运行优化 Git 仓库数据的任务。
+.RE
+.PP
+\fBgit-merge\fR(1)
+.RS 4
+合并两个或多个开发历史。
+.RE
+.PP
+\fBgit-mv\fR(1)
+.RS 4
+移动或重命名文件、目录或符号链接。
+.RE
+.PP
+\fBgit-notes\fR(1)
+.RS 4
+添加或检查对象注释。
+.RE
+.PP
+\fBgit-pull\fR(1)
+.RS 4
+从另一个仓库或本地分支获取并集成。
+.RE
+.PP
+\fBgit-push\fR(1)
+.RS 4
+更新远程引用及其关联的对象。
+.RE
+.PP
+\fBgit-range-diff\fR(1)
+.RS 4
+比较两个提交范围（例如一个分支的两个版本）。
+.RE
+.PP
+\fBgit-rebase\fR(1)
+.RS 4
+在另一个基础提示之上重新应用提交。
+.RE
+.PP
+\fBgit-reset\fR(1)
+.RS 4
+将 \fBHEAD\fR 或索引重置到已知状态。
+.RE
+.PP
+\fBgit-restore\fR(1)
+.RS 4
+恢复工作树文件。
+.RE
+.PP
+\fBgit-revert\fR(1)
+.RS 4
+还原一些已有的提交。
+.RE
+.PP
+\fBgit-rm\fR(1)
+.RS 4
+从工作树和索引中移除文件。
+.RE
+.PP
+\fBgit-shortlog\fR(1)
+.RS 4
+汇总 \fBgit log\fR 的输出。
+.RE
+.PP
+\fBgit-show\fR(1)
+.RS 4
+显示各种类型的对象。
+.RE
+.PP
+\fBgit-sparse-checkout\fR(1)
+.RS 4
+将工作树缩减为跟踪文件的子集。
+.RE
+.PP
+\fBgit-stash\fR(1)
+.RS 4
+将脏工作目录中的更改暂存起来。
+.RE
+.PP
+\fBgit-status\fR(1)
+.RS 4
+显示工作树状态。
+.RE
+.PP
+\fBgit-submodule\fR(1)
+.RS 4
+初始化、更新或检查子模块。
+.RE
+.PP
+\fBgit-switch\fR(1)
+.RS 4
+切换分支。
+.RE
+.PP
+\fBgit-tag\fR(1)
+.RS 4
+创建、列出、删除或验证标签。
+.RE
+.PP
+\fBgit-worktree\fR(1)
+.RS 4
+管理多个工作树。
+.RE
+.PP
+\fBgitk\fR(1)
+.RS 4
+Git 仓库浏览器。
+.RE
+.PP
+\fBscalar\fR(1)
+.RS 4
+管理大型 Git 仓库的工具。
+.RE
+.SS "辅助命令"
+.sp
+操作器：
+.PP
+\fBgit-config\fR(1)
+.RS 4
+获取和设置仓库或全局选项。
+.RE
+.PP
+\fBgit-fast-export\fR(1)
+.RS 4
+Git 数据导出器。
+.RE
+.PP
+\fBgit-fast-import\fR(1)
+.RS 4
+快速 Git 数据导入器的后端。
+.RE
+.PP
+\fBgit-filter-branch\fR(1)
+.RS 4
+重写分支。
+.RE
+.PP
+\fBgit-mergetool\fR(1)
+.RS 4
+运行合并冲突解决工具来解决合并冲突。
+.RE
+.PP
+\fBgit-pack-refs\fR(1)
+.RS 4
+打包头和标签以实现高效的仓库访问。
+.RE
+.PP
+\fBgit-prune\fR(1)
+.RS 4
+从对象数据库中清除所有不可达的对象。
+.RE
+.PP
+\fBgit-reflog\fR(1)
+.RS 4
+管理 reflog 信息。
+.RE
+.PP
+\fBgit-refs\fR(1)
+.RS 4
+对引用的低层访问。
+.RE
+.PP
+\fBgit-remote\fR(1)
+.RS 4
+管理跟踪的远程仓库集合。
+.RE
+.PP
+\fBgit-repack\fR(1)
+.RS 4
+打包仓库中未打包的对象。
+.RE
+.PP
+\fBgit-replace\fR(1)
+.RS 4
+创建、列出、删除替换对象的引用。
+.RE
+.sp
+查询器：
+.PP
+\fBgit-annotate\fR(1)
+.RS 4
+用提交信息注解文件行。
+.RE
+.PP
+\fBgit-blame\fR(1)
+.RS 4
+显示每行文件最后被哪个版本和作者修改。
+.RE
+.PP
+\fBgit-bugreport\fR(1)
+.RS 4
+收集信息以便用户提交错误报告。
+.RE
+.PP
+\fBgit-count-objects\fR(1)
+.RS 4
+统计未打包对象的数量及其磁盘消耗。
+.RE
+.PP
+\fBgit-diagnose\fR(1)
+.RS 4
+生成诊断信息的 zip 压缩包。
+.RE
+.PP
+\fBgit-difftool\fR(1)
+.RS 4
+使用常用的 diff 工具显示更改。
+.RE
+.PP
+\fBgit-fsck\fR(1)
+.RS 4
+验证数据库中对象的连接性和有效性。
+.RE
+.PP
+\fBgit-help\fR(1)
+.RS 4
+显示 Git 的帮助信息。
+.RE
+.PP
+\fBgit-instaweb\fR(1)
+.RS 4
+在 gitweb 中即时浏览你的工作仓库。
+.RE
+.PP
+\fBgit-merge-tree\fR(1)
+.RS 4
+在不触及索引或工作树的情况下执行合并。
+.RE
+.PP
+\fBgit-rerere\fR(1)
+.RS 4
+重用记录的冲突合并解决方案。
+.RE
+.PP
+\fBgit-show-branch\fR(1)
+.RS 4
+显示分支及其提交。
+.RE
+.PP
+\fBgit-verify-commit\fR(1)
+.RS 4
+检查提交的 GPG 签名。
+.RE
+.PP
+\fBgit-verify-tag\fR(1)
+.RS 4
+检查标签的 GPG 签名。
+.RE
+.PP
+\fBgit-version\fR(1)
+.RS 4
+显示 Git 的版本信息。
+.RE
+.PP
+\fBgit-whatchanged\fR(1)
+.RS 4
+显示每个提交引入差异的日志。
+.RE
+.PP
+\fBgitweb\fR(1)
+.RS 4
+Git Web 界面（Git 仓库的前端）。
+.RE
+.SS "与其他系统交互"
+.sp
+这些命令用于与外部 SCM 以及通过电子邮件补丁与其他人交互。
+.PP
+\fBgit-archimport\fR(1)
+.RS 4
+将 GNU Arch 仓库导入 Git。
+.RE
+.PP
+\fBgit-cvsexportcommit\fR(1)
+.RS 4
+将单个提交导出到 CVS 检出。
+.RE
+.PP
+\fBgit-cvsimport\fR(1)
+.RS 4
+从另一个大家爱恨交加的 SCM 中抢救数据。
+.RE
+.PP
+\fBgit-cvsserver\fR(1)
+.RS 4
+Git 的 CVS 服务器模拟器。
+.RE
+.PP
+\fBgit-imap-send\fR(1)
+.RS 4
+将一组补丁从标准输入发送到 IMAP 文件夹。
+.RE
+.PP
+\fBgit-p4\fR(1)
+.RS 4
+从 Perforce 仓库导入和提交。
+.RE
+.PP
+\fBgit-quiltimport\fR(1)
+.RS 4
+将 quilt 补丁集应用到当前分支。
+.RE
+.PP
+\fBgit-request-pull\fR(1)
+.RS 4
+生成待处理更改的摘要。
+.RE
+.PP
+\fBgit-send-email\fR(1)
+.RS 4
+以电子邮件形式发送一组补丁。
+.RE
+.PP
+\fBgit-svn\fR(1)
+.RS 4
+Subversion 仓库和 Git 之间的双向操作。
+.RE
+.SS "重置、恢复和还原"
+.sp
+有三个名称相似的命令：\fBgit reset\fR、\fBgit restore\fR 和 \fBgit revert\fR。
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBgit-revert\fR(1) 是关于创建新的提交来还原其他提交所做的更改。
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBgit-restore\fR(1) 是关于从索引或另一个提交恢复工作树中的文件。此命令不会更新你的分支。该命令也可用于从另一个提交恢复索引中的文件。
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBgit-reset\fR(1) 是关于更新你的分支，移动分支顶端以添加或移除提交。此操作会改变提交历史。
+.sp
+\fBgit reset\fR 也可用于恢复索引，与 \fBgit restore\fR 功能重叠。
+.RE
+.SH "低层命令 (PLUMBING)"
+.sp
+虽然 Git 包含自己的 porcelain 层，但其低层命令足以支持开发替代的 porcelain。此类 porcelain 的开发者可以从阅读 \fBgit-update-index\fR(1) 和 \fBgit-read-tree\fR(1) 开始。
+.sp
+这些低层命令的接口（输入、输出、选项集和语义）比 Porcelain 层命令稳定得多，因为这些命令主要用于脚本编写。而 Porcelain 命令的接口可能会更改以改善最终用户体验。
+.sp
+以下描述将低层命令分为操作对象的命令（在仓库、索引和工作树中）、查询和比较对象的命令，以及在仓库之间移动对象和引用的命令。
+.SS "操作命令"
+.PP
+\fBgit-apply\fR(1)
+.RS 4
+将补丁应用到文件和/或索引。
+.RE
+.PP
+\fBgit-checkout-index\fR(1)
+.RS 4
+将文件从索引复制到工作树。
+.RE
+.PP
+\fBgit-commit-graph\fR(1)
+.RS 4
+写入和验证 Git 提交图文件。
+.RE
+.PP
+\fBgit-commit-tree\fR(1)
+.RS 4
+创建新的提交对象。
+.RE
+.PP
+\fBgit-hash-object\fR(1)
+.RS 4
+计算对象 ID 并可选择从文件创建对象。
+.RE
+.PP
+\fBgit-index-pack\fR(1)
+.RS 4
+为已有的打包存档构建包索引文件。
+.RE
+.PP
+\fBgit-merge-file\fR(1)
+.RS 4
+运行三方文件合并。
+.RE
+.PP
+\fBgit-merge-index\fR(1)
+.RS 4
+对需要合并的文件运行合并。
+.RE
+.PP
+\fBgit-mktag\fR(1)
+.RS 4
+创建标签对象并进行额外验证。
+.RE
+.PP
+\fBgit-mktree\fR(1)
+.RS 4
+从 ls\-tree 格式的文本构建树对象。
+.RE
+.PP
+\fBgit-multi-pack-index\fR(1)
+.RS 4
+写入和验证多包索引。
+.RE
+.PP
+\fBgit-pack-objects\fR(1)
+.RS 4
+创建对象的打包存档。
+.RE
+.PP
+\fBgit-prune-packed\fR(1)
+.RS 4
+移除已存在于包文件中的多余对象。
+.RE
+.PP
+\fBgit-read-tree\fR(1)
+.RS 4
+将树信息读入索引。
+.RE
+.PP
+\fBgit-replay\fR(1)
+.RS 4
+实验性：在新基础上重放提交，也适用于裸仓库。
+.RE
+.PP
+\fBgit-symbolic-ref\fR(1)
+.RS 4
+读取、修改和删除符号引用。
+.RE
+.PP
+\fBgit-unpack-objects\fR(1)
+.RS 4
+从打包存档中解包对象。
+.RE
+.PP
+\fBgit-update-index\fR(1)
+.RS 4
+将工作树中的文件内容注册到索引。
+.RE
+.PP
+\fBgit-update-ref\fR(1)
+.RS 4
+安全地更新引用中存储的对象名称。
+.RE
+.PP
+\fBgit-write-tree\fR(1)
+.RS 4
+从当前索引创建树对象。
+.RE
+.SS "查询命令"
+.PP
+\fBgit-cat-file\fR(1)
+.RS 4
+提供仓库对象的内容或详细信息。
+.RE
+.PP
+\fBgit-cherry\fR(1)
+.RS 4
+查找尚未应用到上游的提交。
+.RE
+.PP
+\fBgit-diff-files\fR(1)
+.RS 4
+比较工作树和索引中的文件。
+.RE
+.PP
+\fBgit-diff-index\fR(1)
+.RS 4
+将树与工作树或索引进行比较。
+.RE
+.PP
+\fBgit-diff-pairs\fR(1)
+.RS 4
+比较提供的 blob 对的内容和模式。
+.RE
+.PP
+\fBgit-diff-tree\fR(1)
+.RS 4
+比较通过两个树对象找到的 blob 的内容和模式。
+.RE
+.PP
+\fBgit-for-each-ref\fR(1)
+.RS 4
+输出每个引用的信息。
+.RE
+.PP
+\fBgit-for-each-repo\fR(1)
+.RS 4
+在一组仓库上运行 Git 命令。
+.RE
+.PP
+\fBgit-format-rev\fR(1)
+.RS 4
+实验性：按需美化格式版本。
+.RE
+.PP
+\fBgit-get-tar-commit-id\fR(1)
+.RS 4
+从使用 git\-archive 创建的归档中提取提交 ID。
+.RE
+.PP
+\fBgit-last-modified\fR(1)
+.RS 4
+实验性：显示文件最后修改时间。
+.RE
+.PP
+\fBgit-ls-files\fR(1)
+.RS 4
+显示索引和工作树中文件的信息。
+.RE
+.PP
+\fBgit-ls-remote\fR(1)
+.RS 4
+列出远程仓库中的引用。
+.RE
+.PP
+\fBgit-ls-tree\fR(1)
+.RS 4
+列出树对象的内容。
+.RE
+.PP
+\fBgit-merge-base\fR(1)
+.RS 4
+为合并找到尽可能好的共同祖先。
+.RE
+.PP
+\fBgit-name-rev\fR(1)
+.RS 4
+为给定版本查找符号名称。
+.RE
+.PP
+\fBgit-pack-redundant\fR(1)
+.RS 4
+查找冗余的包文件。
+.RE
+.PP
+\fBgit-repo\fR(1)
+.RS 4
+检索有关仓库的信息。
+.RE
+.PP
+\fBgit-rev-list\fR(1)
+.RS 4
+按时间倒序列出提交对象。
+.RE
+.PP
+\fBgit-rev-parse\fR(1)
+.RS 4
+提取和处理参数。
+.RE
+.PP
+\fBgit-show-index\fR(1)
+.RS 4
+显示打包归档索引。
+.RE
+.PP
+\fBgit-show-ref\fR(1)
+.RS 4
+列出本地仓库中的引用。
+.RE
+.PP
+\fBgit-unpack-file\fR(1)
+.RS 4
+创建一个包含 blob 内容的临时文件。
+.RE
+.PP
+\fBgit-var\fR(1)
+.RS 4
+显示 Git 逻辑变量。
+.RE
+.PP
+\fBgit-verify-pack\fR(1)
+.RS 4
+验证打包的 Git 归档文件。
+.RE
+.SS "同步仓库"
+.PP
+\fBgit-daemon\fR(1)
+.RS 4
+一个非常简单的 Git 仓库服务器。
+.RE
+.PP
+\fBgit-fetch-pack\fR(1)
+.RS 4
+从另一个仓库接收缺失的对象。
+.RE
+.PP
+\fBgit-http-backend\fR(1)
+.RS 4
+基于 HTTP 的 Git 服务器端实现。
+.RE
+.PP
+\fBgit-send-pack\fR(1)
+.RS 4
+通过 Git 协议将对象推送到另一个仓库。
+.RE
+.PP
+\fBgit-update-server-info\fR(1)
+.RS 4
+更新辅助信息文件以帮助哑服务器。
+.RE
+.SS "内部辅助命令"
+.sp
+这些是其他命令使用的内部辅助命令；最终用户通常不直接使用它们。
+.PP
+\fBgit-check-attr\fR(1)
+.RS 4
+显示 gitattributes 信息。
+.RE
+.PP
+\fBgit-check-ignore\fR(1)
+.RS 4
+调试 gitignore / exclude 文件。
+.RE
+.PP
+\fBgit-check-mailmap\fR(1)
+.RS 4
+显示联系人的规范名称和电子邮件地址。
+.RE
+.PP
+\fBgit-check-ref-format\fR(1)
+.RS 4
+确保引用名称格式正确。
+.RE
+.PP
+\fBgit-column\fR(1)
+.RS 4
+以列形式显示数据。
+.RE
+.PP
+\fBgit-credential\fR(1)
+.RS 4
+检索和存储用户凭据。
+.RE
+.PP
+\fBgit-credential-cache\fR(1)
+.RS 4
+在内存中临时存储密码的辅助工具。
+.RE
+.PP
+\fBgit-credential-store\fR(1)
+.RS 4
+在磁盘上存储凭据的辅助工具。
+.RE
+.PP
+\fBgit-fmt-merge-msg\fR(1)
+.RS 4
+生成合并提交消息。
+.RE
+.PP
+\fBgit-hook\fR(1)
+.RS 4
+运行 Git 钩子。
+.RE
+.PP
+\fBgit-interpret-trailers\fR(1)
+.RS 4
+在提交消息中添加或解析结构化信息。
+.RE
+.PP
+\fBgit-mailinfo\fR(1)
+.RS 4
+从单封电子邮件中提取补丁和作者信息。
+.RE
+.PP
+\fBgit-mailsplit\fR(1)
+.RS 4
+简单的 UNIX mbox 分割程序。
+.RE
+.PP
+\fBgit-merge-one-file\fR(1)
+.RS 4
+与 git\-merge\-index 一起使用的标准辅助程序。
+.RE
+.PP
+\fBgit-patch-id\fR(1)
+.RS 4
+计算补丁的唯一 ID。
+.RE
+.PP
+\fBgit-sh-i18n\fR(1)
+.RS 4
+用于 shell 脚本的 Git i18n 设置代码。
+.RE
+.PP
+\fBgit-sh-setup\fR(1)
+.RS 4
+Git shell 脚本通用设置代码。
+.RE
+.PP
+\fBgit-stripspace\fR(1)
+.RS 4
+移除不必要的空白。
+.RE
+.PP
+\fBgit-url-parse\fR(1)
+.RS 4
+解析和提取 Git URL 组件。
+.RE
+.SH "指南"
+.sp
+以下文档页面是关于 Git 概念的指南。
+.PP
+\fBgitcore-tutorial\fR(7)
+.RS 4
+面向开发者的 Git 核心教程。
+.RE
+.PP
+\fBgitcredentials\fR(7)
+.RS 4
+向 Git 提供用户名和密码。
+.RE
+.PP
+\fBgitcvs-migration\fR(7)
+.RS 4
+面向 CVS 用户的 Git。
+.RE
+.PP
+\fBgitdiffcore\fR(7)
+.RS 4
+调整 diff 输出。
+.RE
+.PP
+\fBgiteveryday\fR(7)
+.RS 4
+日常 Git 使用的一套实用最小命令集。
+.RE
+.PP
+\fBgitfaq\fR(7)
+.RS 4
+关于使用 Git 的常见问题。
+.RE
+.PP
+\fBgitglossary\fR(7)
+.RS 4
+Git 词汇表。
+.RE
+.PP
+\fBgitnamespaces\fR(7)
+.RS 4
+Git 命名空间。
+.RE
+.PP
+\fBgitremote-helpers\fR(7)
+.RS 4
+与远程仓库交互的辅助程序。
+.RE
+.PP
+\fBgitsubmodules\fR(7)
+.RS 4
+在仓库中挂载另一个仓库。
+.RE
+.PP
+\fBgittutorial\fR(7)
+.RS 4
+Git 教程入门。
+.RE
+.PP
+\fBgittutorial-2\fR(7)
+.RS 4
+Git 教程入门：第二部分。
+.RE
+.PP
+\fBgitworkflows\fR(7)
+.RS 4
+推荐的 Git 工作流概述。
+.RE
+.SH "仓库、命令和文件接口"
+.sp
+此文档讨论用户期望直接交互的仓库和命令接口。有关标准的更多详细信息，请参见 \fBgit-help\fR(1) 中的 \fB\-\-user\-formats\fR。
+.PP
+\fBgitattributes\fR(5)
+.RS 4
+按路径定义属性。
+.RE
+.PP
+\fBgitcli\fR(7)
+.RS 4
+Git 命令行接口和约定。
+.RE
+.PP
+\fBgithooks\fR(5)
+.RS 4
+Git 使用的钩子。
+.RE
+.PP
+\fBgitignore\fR(5)
+.RS 4
+指定要忽略的故意不跟踪的文件。
+.RE
+.PP
+\fBgitmailmap\fR(5)
+.RS 4
+映射作者/提交者姓名和/或电子邮件地址。
+.RE
+.PP
+\fBgitmodules\fR(5)
+.RS 4
+定义子模块属性。
+.RE
+.PP
+\fBgitrepository-layout\fR(5)
+.RS 4
+Git 仓库布局。
+.RE
+.PP
+\fBgitrevisions\fR(7)
+.RS 4
+为 Git 指定版本和范围。
+.RE
+.SH "文件格式、协议和其他开发者接口"
+.sp
+此文档讨论文件格式、线上协议和其他 Git 开发者接口。参见 \fBgit-help\fR(1) 中的 \fB\-\-developer\-interfaces\fR。
+.PP
+\fBgitformat-bundle\fR(5)
+.RS 4
+Bundle 文件格式。
+.RE
+.PP
+\fBgitformat-chunk\fR(5)
+.RS 4
+基于块的文件格式。
+.RE
+.PP
+\fBgitformat-commit-graph\fR(5)
+.RS 4
+Git 提交图格式。
+.RE
+.PP
+\fBgitformat-index\fR(5)
+.RS 4
+Git 索引格式。
+.RE
+.PP
+\fBgitformat-pack\fR(5)
+.RS 4
+Git 包格式。
+.RE
+.PP
+\fBgitformat-signature\fR(5)
+.RS 4
+Git 加密签名格式。
+.RE
+.PP
+\fBgitprotocol-capabilities\fR(5)
+.RS 4
+协议 v0 和 v1 能力。
+.RE
+.PP
+\fBgitprotocol-common\fR(5)
+.RS 4
+各种协议的通用部分。
+.RE
+.PP
+\fBgitprotocol-http\fR(5)
+.RS 4
+基于 HTTP 的 Git 协议。
+.RE
+.PP
+\fBgitprotocol-pack\fR(5)
+.RS 4
+包如何在线路上传输。
+.RE
+.PP
+\fBgitprotocol-v2\fR(5)
+.RS 4
+Git 线路协议，版本 2。
+.RE
+.SH "配置机制"
+.sp
+Git 使用简单的文本格式来存储按仓库和按用户的自定义设置。配置文件可能如下所示：
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+#
+# \*(Aq#\*(Aq 或 \*(Aq;\*(Aq 字符表示注释。
+#
+
+; 核心变量
+[core]
+        ; 不信任文件模式
+        filemode = false
+
+; 用户身份
+[user]
+        name = "Junio C Hamano"
+        email = "gitster@pobox\&.com"
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+各种命令从配置文件中读取并相应地调整其操作。参见 \fBgit-config\fR(1) 获取列表以及关于配置机制的更多详细信息。
+.SH "标识符术语"
+.PP
+<object>
+.RS 4
+表示任何类型对象的对象名称。
+.RE
+.PP
+<blob>
+.RS 4
+表示 blob 对象名称。
+.RE
+.PP
+<tree>
+.RS 4
+表示树对象名称。
+.RE
+.PP
+<commit>
+.RS 4
+表示提交对象名称。
+.RE
+.PP
+<tree\-ish>
+.RS 4
+表示树、提交或标签对象名称。接受 <tree\-ish> 参数的命令最终想要操作 <tree> 对象，但会自动解引用指向 <tree> 的 <commit> 和 <tag> 对象。
+.RE
+.PP
+<commit\-ish>
+.RS 4
+表示提交或标签对象名称。接受 <commit\-ish> 参数的命令最终想要操作 <commit> 对象，但会自动解引用指向 <commit> 的 <tag> 对象。
+.RE
+.PP
+<type>
+.RS 4
+表示需要指定对象类型。目前可以是以下之一：\fBblob\fR、\fBtree\fR、\fBcommit\fR 或 \fBtag\fR。
+.RE
+.PP
+<file>
+.RS 4
+表示文件名 — 几乎总是相对于 \fBGIT_INDEX_FILE\fR 描述的树结构根目录。
+.RE
+.SH "符号标识符"
+.sp
+任何接受任何 <object> 的 Git 命令也可以使用以下符号表示：
+.PP
+HEAD
+.RS 4
+表示当前分支的头部。
+.RE
+.PP
+<tag>
+.RS 4
+一个有效的标签 \fI名称\fR（即 \fBrefs/tags/\fR\fI<tag>\fR 引用）。
+.RE
+.PP
+<head>
+.RS 4
+一个有效的分支头部 \fI名称\fR（即 \fBrefs/heads/\fR\fI<head>\fR 引用）。
+.RE
+.sp
+关于拼写对象名称的更完整列表，请参见 \fBgitrevisions\fR(7) 中的 "SPECIFYING REVISIONS" 部分。
+.SH "文件/目录结构"
+.sp
+请参阅 \fBgitrepository-layout\fR(5) 文档。
+.sp
+关于每个钩子的更多细节，请阅读 \fBgithooks\fR(5)。
+.sp
+高层 SCM 可以在 \fB$GIT_DIR\fR 中提供和管理额外信息。
+.SH "术语"
+.sp
+请参见 \fBgitglossary\fR(7)。
+.SH "环境变量"
+.sp
+各种 Git 命令会关注环境变量并改变其行为。标记为 "Boolean" 的环境变量采用与布尔值配置变量相同的取值方式，即 "true"、"yes"、"on" 和正数视为 "是"，而 "false"、"no"、"off" 和 "0" 视为 "否"。
+.sp
+以下是这些变量：
+.SS "系统"
+.PP
+\fBHOME\fR
+.RS 4
+指定用户主目录的路径。在 Windows 上，如果未设置，Git 将设置一个等于以下值之一的环境变量：如果 \fB$HOMEDRIVE\fR 和 \fB$HOMEPATH\fR 都存在则为 \fB$HOMEDRIVE$HOMEPATH\fR；否则如果 \fB$USERPROFILE\fR 存在则为 \fB$USERPROFILE\fR。
+.RE
+.PP
+\fBPATH\fR
+.RS 4
+当用户运行不属于核心 Git 程序（安装在 GIT_EXEC_PATH 中）的 \fIgit <command>\fR 时，将调用在 \fB$PATH\fR 目录中用户可运行的 \fIgit\-<command>\fR。命令名之后的参数按原样传递给程序。要执行 \fBgit\fR \fI<foo>\fR，Git 会在尝试将 \fBfoo\fR 作为别名之前，查找命令 \fI<foo>\fR（要么在 \fIGIT_EXEC_PATH\fR 中的核心 Git 程序，要么在 \fIPATH\fR 目录中的自定义程序）。
+.RE
+.SS "Git 仓库"
+.sp
+这些环境变量适用于 \fI所有\fR 核心 Git 命令。注意：它们可能被位于 Git 之上的 SCM 使用/覆盖，因此如果使用外部前端请小心。
+.PP
+\fBGIT_INDEX_FILE\fR
+.RS 4
+此环境变量指定备用的索引文件。如果未指定，则使用默认的 \fB$GIT_DIR/index\fR。
+.RE
+.PP
+\fBGIT_INDEX_VERSION\fR
+.RS 4
+此环境变量指定写入索引文件时使用的索引版本。它不影响已有的索引文件。默认使用索引文件版本 2 或 3。更多信息参见 \fBgit-update-index\fR(1)。
+.RE
+.PP
+\fBGIT_OBJECT_DIRECTORY\fR
+.RS 4
+如果通过此环境变量指定了对象存储目录，则在其下创建 sha1 目录 — 否则使用默认的 \fB$GIT_DIR/objects\fR 目录。
+.RE
+.PP
+\fBGIT_ALTERNATE_OBJECT_DIRECTORIES\fR
+.RS 4
+由于 Git 对象的不可变性，旧对象可以归档到共享的只读目录中。此变量指定一个用 ":" 分隔（Windows 上用 ";" 分隔）的 Git 对象目录列表，可用于搜索 Git 对象。新对象不会写入这些目录。
+.RE
+.PP
+\fBGIT_DIR\fR
+.RS 4
+如果设置了 \fBGIT_DIR\fR 环境变量，则指定用于仓库基础的路径，而不是默认的 \fB\&.git\fR。\fB\-\-git\-dir\fR 命令行选项也会设置此值。
+.RE
+.PP
+\fBGIT_WORK_TREE\fR
+.RS 4
+设置工作树根目录的路径。这也可以通过 \fB\-\-work\-tree\fR 命令行选项和 core\&.worktree 配置变量来控制。
+.RE
+.PP
+\fBGIT_NAMESPACE\fR
+.RS 4
+设置 Git 命名空间；详见 \fBgitnamespaces\fR(7)。\fB\-\-namespace\fR 命令行选项也会设置此值。
+.RE
+.PP
+\fBGIT_CEILING_DIRECTORIES\fR
+.RS 4
+应为用冒号分隔的绝对路径列表。如果设置，这是 Git 在查找仓库目录时不应向上切换目录的目录列表（用于排除加载缓慢的网络目录）。它不会排除当前工作目录或通过命令行或环境设置的 GIT_DIR。通常，Git 必须读取此列表中的条目并解析可能存在的符号链接，以便将其与当前目录进行比较。但如果连这种访问都很慢，你可以向列表中添加一个空条目，告诉 Git 后续条目不是符号链接且不需要解析。
+.RE
+.PP
+\fBGIT_DISCOVERY_ACROSS_FILESYSTEM\fR
+.RS 4
+当在没有 ".git" 仓库目录的目录中运行时，Git 会尝试在父目录中查找此类目录以找到工作树的顶部，但默认情况下不会跨越文件系统边界。此布尔环境变量可以设置为 true 以告诉 Git 不要在文件系统边界处停止。与 \fBGIT_CEILING_DIRECTORIES\fR 一样，这不会影响通过 \fBGIT_DIR\fR 或命令行设置的显式仓库目录。
+.RE
+.PP
+\fBGIT_COMMON_DIR\fR
+.RS 4
+如果此变量设置为路径，则通常位于 $GIT_DIR 中的非工作树文件将从该路径获取。工作树特定的文件（如 HEAD 或 index）仍从 $GIT_DIR 获取。详见 \fBgitrepository-layout\fR(5) 和 \fBgit-worktree\fR(1)。此变量的优先级低于其他路径变量，如 GIT_INDEX_FILE、GIT_OBJECT_DIRECTORY 等。
+.RE
+.PP
+\fBGIT_DEFAULT_HASH\fR
+.RS 4
+如果设置了此变量，新仓库的默认哈希算法将设置为该值。克隆时会忽略此值，始终使用远程仓库的设置。默认值为 "sha1"。参见 \fBgit-init\fR(1) 中的 \fB\-\-object\-format\fR。
+.RE
+.PP
+\fBGIT_DEFAULT_REF_FORMAT\fR
+.RS 4
+如果设置了此变量，新仓库的默认引用后端格式将设置为该值。默认值为 "files"。参见 \fBgit-init\fR(1) 中的 \fB\-\-ref\-format\fR。
+.RE
+.PP
+\fBGIT_REFERENCE_BACKEND\fR
+.RS 4
+指定要使用的引用后端及其 URI。更多细节参见 \fBgit-config\fR(1) 中的 \fBextensions\&.refStorage\fR 选项。使用时覆盖配置变量。
+.RE
+.SS "Git 提交"
+.PP
+\fBGIT_AUTHOR_NAME\fR
+.RS 4
+创建提交或标签对象或写入 reflog 时作者身份中使用的人类可读名称。覆盖 \fBuser\&.name\fR 和 \fBauthor\&.name\fR 配置设置。
+.RE
+.PP
+\fBGIT_AUTHOR_EMAIL\fR
+.RS 4
+创建提交或标签对象或写入 reflog 时作者身份中使用的电子邮件地址。覆盖 \fBuser\&.email\fR 和 \fBauthor\&.email\fR 配置设置。
+.RE
+.PP
+\fBGIT_AUTHOR_DATE\fR
+.RS 4
+创建提交或标签对象或写入 reflog 时作者身份使用的日期。有效格式参见 \fBgit-commit\fR(1)。
+.RE
+.PP
+\fBGIT_COMMITTER_NAME\fR
+.RS 4
+创建提交或标签对象或写入 reflog 时提交者身份中使用的人类可读名称。覆盖 \fBuser\&.name\fR 和 \fBcommitter\&.name\fR 配置设置。
+.RE
+.PP
+\fBGIT_COMMITTER_EMAIL\fR
+.RS 4
+创建提交或标签对象或写入 reflog 时提交者身份中使用的电子邮件地址。覆盖 \fBuser\&.email\fR 和 \fBcommitter\&.email\fR 配置设置。
+.RE
+.PP
+\fBGIT_COMMITTER_DATE\fR
+.RS 4
+创建提交或标签对象或写入 reflog 时提交者身份使用的日期。有效格式参见 \fBgit-commit\fR(1)。
+.RE
+.PP
+\fBEMAIL\fR
+.RS 4
+如果没有设置其他相关环境变量或配置设置，在作者和提交者身份中使用的电子邮件地址。
+.RE
+.SS "Git 差异"
+.PP
+\fBGIT_DIFF_OPTS\fR
+.RS 4
+唯一有效的设置是 "\-\-unified=??" 或 "\-u??" 来设置统一 diff 创建时显示的上下文行数。这优先于 Git diff 命令行上传递的任何 "\-U" 或 "\-\-unified" 选项值。
+.RE
+.PP
+\fBGIT_EXTERNAL_DIFF\fR
+.RS 4
+当设置了 \fBGIT_EXTERNAL_DIFF\fR 环境变量时，由命名的程序生成 diff，Git 不使用其内置的 diff 机制。对于添加、删除或修改的路径，\fBGIT_EXTERNAL_DIFF\fR 被调用并带有 7 个参数：path old\-file old\-hex old\-mode new\-file new\-hex new\-mode。
+.sp
+对于未合并的路径，\fBGIT_EXTERNAL_DIFF\fR 被调用并带有 1 个参数 <path>。
+.sp
+对于每个被调用的 \fBGIT_EXTERNAL_DIFF\fR 路径，会设置两个环境变量 \fBGIT_DIFF_PATH_COUNTER\fR 和 \fBGIT_DIFF_PATH_TOTAL\fR。
+.RE
+.PP
+\fBGIT_EXTERNAL_DIFF_TRUST_EXIT_CODE\fR
+.RS 4
+如果此布尔环境变量设置为 true，则 \fBGIT_EXTERNAL_DIFF\fR 命令预期在认为输入文件相等时返回退出码 0，在认为它们不同时返回 1，就像 \fBdiff\fR(\fB1\fR) 一样。如果设置为 false（默认值），则命令预期无论是否相等都返回退出码 0。任何其他退出码都会导致 Git 报告致命错误。
+.RE
+.PP
+\fBGIT_DIFF_PATH_COUNTER\fR
+.RS 4
+一个从 1 开始的计数器，每个路径递增 1。
+.RE
+.PP
+\fBGIT_DIFF_PATH_TOTAL\fR
+.RS 4
+路径总数。
+.RE
+.SS "其他"
+.PP
+\fBGIT_MERGE_VERBOSITY\fR
+.RS 4
+控制递归合并策略显示输出量的数字。覆盖 merge\&.verbosity。参见 \fBgit-merge\fR(1)。
+.RE
+.PP
+\fBGIT_PAGER\fR
+.RS 4
+此环境变量覆盖 \fB$PAGER\fR。如果设置为空字符串或值 "cat"，Git 将不启动分页器。另请参见 \fBgit-config\fR(1) 中的 \fBcore\&.pager\fR 选项。
+.RE
+.PP
+\fBGIT_PROGRESS_DELAY\fR
+.RS 4
+控制在显示可选进度指示器之前延迟多少秒的数字。默认为 1。
+.RE
+.PP
+\fBGIT_EDITOR\fR
+.RS 4
+此环境变量覆盖 \fB$EDITOR\fR 和 \fB$VISUAL\fR。在交互模式下需要启动编辑器时，多个 Git 命令会使用它。另请参见 \fBgit-var\fR(1) 和 \fBgit-config\fR(1) 中的 \fBcore\&.editor\fR 选项。
+.RE
+.PP
+\fBGIT_SEQUENCE_EDITOR\fR
+.RS 4
+编辑交互式 rebase 的待办列表时，此环境变量覆盖配置的 Git 编辑器。另请参见 \fBgit-rebase\fR(1) 和 \fBgit-config\fR(1) 中的 \fBsequence\&.editor\fR 选项。
+.RE
+.PP
+\fBGIT_SSH\fR, \fBGIT_SSH_COMMAND\fR
+.RS 4
+如果设置了这些环境变量中的任何一个，则 \fIgit fetch\fR 和 \fIgit push\fR 在需要连接到远程系统时将使用指定的命令而不是 \fIssh\fR。传递给配置命令的命令行参数由 ssh 变体决定。详见 \fBgit-config\fR(1) 中的 \fBssh\&.variant\fR 选项。
+.sp
+\fB$GIT_SSH_COMMAND\fR 优先于 \fB$GIT_SSH\fR，并由 shell 解释，允许包含额外的参数。而 \fB$GIT_SSH\fR 必须只是一个程序的路径（如果需要额外的参数，可以是一个包装 shell 脚本）。
+.sp
+通常通过个人的 \fB\&.ssh/config\fR 文件配置所需选项更为简单。请查阅 ssh 文档了解更多细节。
+.RE
+.PP
+\fBGIT_SSH_VARIANT\fR
+.RS 4
+如果设置了此环境变量，它将覆盖 Git 对 \fBGIT_SSH\fR/\fBGIT_SSH_COMMAND\fR/\fBcore\&.sshCommand\fR 引用的是 OpenSSH、plink 还是 tortoiseplink 的自动检测。此变量覆盖具有相同目的的配置设置 \fBssh\&.variant\fR。
+.RE
+.PP
+\fBGIT_SSL_NO_VERIFY\fR
+.RS 4
+设置并导出此环境变量为任何值都会告诉 Git 在通过 HTTPS 获取或推送时不验证 SSL 证书。
+.RE
+.PP
+\fBGIT_ATTR_SOURCE\fR
+.RS 4
+设置读取 gitattributes 的树对象。
+.RE
+.PP
+\fBGIT_ASKPASS\fR
+.RS 4
+如果设置了此环境变量，则需要获取密码或密码短语的 Git 命令（例如用于 HTTP 或 IMAP 认证）将使用适当的提示作为命令行参数调用此程序，并从其 STDOUT 读取密码。另请参见 \fBgit-config\fR(1) 中的 \fBcore\&.askPass\fR 选项。
+.RE
+.PP
+\fBGIT_TERMINAL_PROMPT\fR
+.RS 4
+如果此布尔环境变量设置为 false，git 将不会在终端上提示（例如在询问 HTTP 认证时）。
+.RE
+.PP
+\fBGIT_CONFIG_GLOBAL\fR, \fBGIT_CONFIG_SYSTEM\fR
+.RS 4
+从给定文件获取配置，而不是从全局或系统级配置文件获取。如果设置了 \fBGIT_CONFIG_SYSTEM\fR，则不会读取构建时定义的系统配置文件（通常是 \fB/etc/gitconfig\fR）。同样，如果设置了 \fBGIT_CONFIG_GLOBAL\fR，则不会读取 \fB$HOME/\&.gitconfig\fR 和 \fB$XDG_CONFIG_HOME/git/config\fR。可以设置为 \fB/dev/null\fR 以跳过读取相应级别的配置文件。
+.RE
+.PP
+\fBGIT_CONFIG_NOSYSTEM\fR
+.RS 4
+是否跳过从系统范围的 \fB$\fR(\fBprefix\fR)\fB/etc/gitconfig\fR 文件读取设置。此布尔环境变量可与 \fB$HOME\fR 和 \fB$XDG_CONFIG_HOME\fR 一起使用，为挑剔的脚本创建可预测的环境，或者你可以将其设置为 true 以临时避免使用有问题的 \fB/etc/gitconfig\fR 文件，等待有足够权限的人修复它。
+.RE
+.PP
+\fBGIT_FLUSH\fR
+.RS 4
+如果此布尔环境变量设置为 true，则 \fIgit blame\fR（增量模式）、\fIgit rev-list\fR、\fIgit log\fR、\fIgit check-attr\fR 和 \fIgit check-ignore\fR 等命令将在每条记录输出后强制刷新输出流。如果设置为 false，这些命令的输出将使用完全缓冲的 I/O。如果未设置此环境变量，Git 将根据 stdout 是否被重定向到文件来选择缓冲或面向记录的刷新。
+.RE
+.PP
+\fBGIT_TRACE\fR
+.RS 4
+启用通用跟踪消息，例如别名展开、内置命令执行和外部命令执行。
+.sp
+如果设置为 "1"、"2" 或 "true"（不区分大小写），跟踪消息将打印到 stderr。如果设置为大于 2 且小于 10 的整数值，Git 将把该值解释为打开的文件描述符并尝试将跟踪消息写入该文件描述符。或者，如果设置为绝对路径（以 \fI/\fR 字符开头），Git 将其解释为文件路径并尝试将跟踪消息追加到该文件。
+.sp
+取消设置此变量或将其设置为空、"0" 或 "false"（不区分大小写）将禁用跟踪消息。
+.RE
+.PP
+\fBGIT_TRACE_FSMONITOR\fR
+.RS 4
+启用文件系统监视器扩展的跟踪消息。可用跟踪输出选项参见 \fBGIT_TRACE\fR。
+.RE
+.PP
+\fBGIT_TRACE_PACK_ACCESS\fR
+.RS 4
+启用对任何包的所有访问的跟踪消息。每次访问都会记录包文件名和包中的偏移量。这可能有助于排查一些与包相关的性能问题。可用跟踪输出选项参见 \fBGIT_TRACE\fR。
+.RE
+.PP
+\fBGIT_TRACE_PACKET\fR
+.RS 4
+启用给定程序所有进出数据包的跟踪消息。这可以帮助调试对象协商或其他协议问题。以 "PACK" 开头的数据包会关闭跟踪（但参见下面的 \fBGIT_TRACE_PACKFILE\fR）。可用跟踪输出选项参见 \fBGIT_TRACE\fR。
+.RE
+.PP
+\fBGIT_TRACE_PACKFILE\fR
+.RS 4
+启用给定程序发送或接收的 packfile 的跟踪。与其他跟踪输出不同，此跟踪是原样的：没有头部，也没有二进制数据的引用。你几乎肯定希望将其定向到文件（例如 \fBGIT_TRACE_PACKFILE=/tmp/my\&.pack\fR），而不是显示在终端上或与其他跟踪输出混合。
+.sp
+注意，目前仅对克隆和获取的客户端实现了此功能。
+.RE
+.PP
+\fBGIT_TRACE_PERFORMANCE\fR
+.RS 4
+启用与性能相关的跟踪消息，例如每个 Git 命令的总执行时间。可用跟踪输出选项参见 \fBGIT_TRACE\fR。
+.RE
+.PP
+\fBGIT_TRACE_REFS\fR
+.RS 4
+启用引用数据库操作的跟踪消息。可用跟踪输出选项参见 \fBGIT_TRACE\fR。
+.RE
+.PP
+\fBGIT_TRACE_SETUP\fR
+.RS 4
+启用在 Git 完成设置阶段后打印 .git、工作树和当前工作目录的跟踪消息。可用跟踪输出选项参见 \fBGIT_TRACE\fR。
+.RE
+.PP
+\fBGIT_TRACE_SHALLOW\fR
+.RS 4
+启用可以帮助调试浅仓库获取/克隆的跟踪消息。可用跟踪输出选项参见 \fBGIT_TRACE\fR。
+.RE
+.PP
+\fBGIT_TRACE_CURL\fR
+.RS 4
+启用 Git 传输协议中所有传入和传出数据（包括描述性信息）的 curl 完整跟踪转储。这类似于在命令行上执行 curl \fB\-\-trace\-ascii\fR。可用跟踪输出选项参见 \fBGIT_TRACE\fR。
+.RE
+.PP
+\fBGIT_TRACE_CURL_NO_DATA\fR
+.RS 4
+当启用 curl 跟踪时（参见上面的 \fBGIT_TRACE_CURL\fR），不转储数据（即只转储信息行和头部）。
+.RE
+.PP
+\fBGIT_TRACE2\fR
+.RS 4
+启用来自 "trace2" 库的更详细的跟踪消息。\fBGIT_TRACE2\fR 的输出是一种简单的基于文本的格式，便于人类阅读。
+.sp
+如果设置为 "1"、"2" 或 "true"（不区分大小写），跟踪消息将打印到 stderr。如果设置为大于 2 且小于 10 的整数值，Git 将把该值解释为打开的文件描述符并尝试将跟踪消息写入该文件描述符。或者，如果设置为绝对路径，Git 将尝试将跟踪消息追加到该文件。如果路径已存在且是目录，跟踪消息将写入该目录中的文件（每个进程一个）。另外，如果变量设置为 \fBaf_unix:\fR[\fI<socket-type>\fR\fB:\fR]\fI<absolute-pathname>\fR，Git 将尝试以 Unix 域套接字的方式打开该路径。套接字类型可以是 \fBstream\fR 或 \fBdgram\fR。
+.sp
+取消设置此变量或将其设置为空、"0" 或 "false" 将禁用跟踪消息。
+.sp
+完整详情参见 \m[blue]\fBTrace2 文档\fR\m[]\&\s-2\u[2]\d\s+2。
+.RE
+.PP
+\fBGIT_TRACE2_EVENT\fR
+.RS 4
+此设置写入适合机器解释的基于 JSON 的格式。可用跟踪输出选项参见 \fBGIT_TRACE2\fR，完整详情参见 \m[blue]\fBTrace2 文档\fR\m[]\&\s-2\u[2]\d\s+2。
+.RE
+.PP
+\fBGIT_TRACE2_PERF\fR
+.RS 4
+除了 \fBGIT_TRACE2\fR 中可用的基于文本的消息外，此设置还写入基于列的格式，用于理解嵌套区域。可用跟踪输出选项参见 \fBGIT_TRACE2\fR，完整详情参见 \m[blue]\fBTrace2 文档\fR\m[]\&\s-2\u[2]\d\s+2。
+.RE
+.PP
+\fBGIT_TRACE_REDACT\fR
+.RS 4
+默认情况下，当激活跟踪时，Git 会屏蔽 cookie、"Authorization:" 头、"Proxy\-Authorization:" 头和 packfile URI 的值。将此布尔环境变量设置为 false 可阻止此屏蔽。
+.RE
+.PP
+\fBGIT_NO_REPLACE_OBJECTS\fR
+.RS 4
+设置并导出此环境变量会告诉 Git 忽略替换引用且不替换 Git 对象。
+.RE
+.PP
+\fBGIT_LITERAL_PATHSPECS\fR
+.RS 4
+将此布尔环境变量设置为 true 会使 Git 将所有路径规范按字面量处理，而不是作为 glob 模式。例如，运行 \fBGIT_LITERAL_PATHSPECS=1 git log \-\- \*(Aq*\&.c\*(Aq 将搜索触及路径 \fB*\&.c\fR 的提交，而不是 glob \fB*\&.c\fR 匹配的任何路径。
+.RE
+.PP
+\fBGIT_GLOB_PATHSPECS\fR
+.RS 4
+将此布尔环境变量设置为 true 会使 Git 将所有路径规范视为 glob 模式（即 "glob" 魔法）。
+.RE
+.PP
+\fBGIT_NOGLOB_PATHSPECS\fR
+.RS 4
+将此布尔环境变量设置为 true 会使 Git 将所有路径规范视为字面量（即 "literal" 魔法）。
+.RE
+.PP
+\fBGIT_ICASE_PATHSPECS\fR
+.RS 4
+将此布尔环境变量设置为 true 会使 Git 将所有路径规范视为不区分大小写。
+.RE
+.PP
+\fBGIT_NO_LAZY_FETCH\fR
+.RS 4
+将此布尔环境变量设置为 true 会告诉 Git 不要从 promisor 远程按需延迟获取缺失的对象。
+.RE
+.PP
+\fBGIT_REFLOG_ACTION\fR
+.RS 4
+当引用被更新时，会创建 reflog 条目以跟踪引用被更新的原因（通常是更新引用的高层命令的名称），以及引用的新旧值。脚本化的 Porcelain 命令可以使用 \fBgit\-sh\-setup\fR 中的 set_reflog_action 辅助函数在作为顶层命令被最终用户调用时将其名称设置为此变量，以记录在 reflog 的主体中。
+.RE
+.PP
+\fBGIT_REF_PARANOIA\fR
+.RS 4
+如果此布尔环境变量设置为 false，则在遍历引用列表时忽略损坏或命名不当的引用。通常 Git 会尝试包含所有此类引用，这可能导致某些操作失败。这是更可取的做法，因为潜在破坏性操作（例如 \fBgit-prune\fR(1)）最好中止而不是忽略损坏的引用。默认值为 \fB1\fR。
+.RE
+.PP
+\fBGIT_COMMIT_GRAPH_PARANOIA\fR
+.RS 4
+当从提交图加载提交对象时，Git 在对象数据库中对对象执行存在性检查。这样做是为了避免陈旧的提交图包含对已删除提交的引用所导致的问题，但这会带来性能损失。
+.sp
+默认值为 "false"，禁用上述行为。将其设置为 "true" 会启用存在性检查，以确保不会从提交图中返回过时的提交，但会影响性能。
+.RE
+.PP
+\fBGIT_ALLOW_PROTOCOL\fR
+.RS 4
+如果设置为冒号分隔的协议列表，行为如同将 \fBprotocol\&.allow\fR 设置为 \fBnever\fR，并且每个列出的协议将 \fBprotocol\&.\fR\fI<name>\fR\fB\&.allow\fR 设置为 \fBalways\fR（覆盖任何现有配置）。更多细节参见 \fBgit-config\fR(1) 中 \fBprotocol\&.allow\fR 的描述。
+.RE
+.PP
+\fBGIT_PROTOCOL_FROM_USER\fR
+.RS 4
+将此布尔环境变量设置为 false 以阻止配置为 \fBuser\fR 状态的 fetch/push/clone 使用的协议。这对于限制来自不受信任仓库的递归子模块初始化，或为向 git 命令提供潜在不受信任 URL 的程序来说很有用。更多细节参见 \fBgit-config\fR(1)。
+.RE
+.PP
+\fBGIT_PROTOCOL\fR
+.RS 4
+仅供内部使用。用于握手线路协议。包含一个冒号分隔的键列表，带有可选值 \fI<key>[=<value>]\fR。必须忽略未知的键和值。
+.sp
+注意，服务器可能需要配置以允许此变量通过某些传输方式传递。它在访问本地仓库（即 \fBfile://\fR 或文件系统路径）以及通过 \fBgit://\fR 协议时会自动传播。对于 git-over-http，在大多数配置下应该自动工作。对于 git-over-ssh，ssh 服务器可能需要配置以允许客户端传递此变量（例如在 OpenSSH 中使用 \fBAcceptEnv GIT_PROTOCOL\fR）。
+.sp
+此配置是可选的。如果变量未被传播，客户端将回退到原始的 "v0" 协议（但可能会错过一些性能改进或特性）。此变量目前仅影响克隆和获取；尚未用于推送（但将来可能会）。
+.RE
+.PP
+\fBGIT_OPTIONAL_LOCKS\fR
+.RS 4
+如果此布尔环境变量设置为 false，Git 将完成任何请求的操作而不执行需要获取锁的可选子操作。例如，这将阻止 \fBgit status\fR 作为副作用刷新索引。这对于在后台运行的进程很有用，这些进程不希望与仓库上的其他操作产生锁竞争。默认值为 \fB1\fR。
+.RE
+.PP
+\fBGIT_REDIRECT_STDIN\fR, \fBGIT_REDIRECT_STDOUT\fR, \fBGIT_REDIRECT_STDERR\fR
+.RS 4
+仅限 Windows：允许将标准输入/输出/错误句柄重定向到环境变量指定的路径。这特别适用于多线程应用程序，其中通过 \fBCreateProcess\fR() 传递标准句柄的规范方法不可用，因为这将要求句柄被标记为可继承。支持两个特殊值：\fBoff\fR 将简单地关闭相应的标准句柄；如果 \fBGIT_REDIRECT_STDERR\fR 是 \fB2\fR>&1，标准错误将被重定向到与标准输出相同的句柄。
+.RE
+.PP
+\fBGIT_PRINT_SHA1_ELLIPSIS\fR （已弃用）
+.RS 4
+如果设置为 \fByes\fR，在（缩写的）SHA\-1 值后面打印省略号。这会影响分离 HEAD 的指示和原始 diff 输出。在所述情况下打印省略号不再被认为是适当的，对其的支持可能在不久的将来被移除。
+.RE
+.PP
+\fBGIT_ADVICE\fR
+.RS 4
+如果设置为 \fB0\fR，则禁用所有建议消息。这些消息旨在向人类用户提供提示，帮助他们摆脱问题状况或利用新功能。用户可以使用 \fBadvice\&.*\fR 配置键禁用个别消息。这些消息可能会干扰执行 Git 进程的工具，因此此变量可用于禁用这些消息。（\fB\-\-no\-advice\fR 全局选项也可用，但旧版本 Git 可能不理解此选项而失败。环境变量将被不理解的 Git 版本忽略。）
+.RE
+.SH "讨论"
+.sp
+更多细节可从 \m[blue]\fBGit 用户手册的概念章节\fR\m[]\&\s-2\u[3]\d\s+2 和 \fBgitcore-tutorial\fR(7) 获得。
+.sp
+Git 项目通常包括一个工作目录，顶层有一个 ".git" 子目录。.git 目录包含：一个压缩的对象数据库，代表项目的完整历史；一个 "索引" 文件，将历史连接到工作树的当前内容；以及指向历史中的命名指针，如标签和分支头。
+.sp
+对象数据库包含三种主要类型的对象：blob，保存文件数据；tree，指向 blob 和其他 tree 以构建目录层次结构；commit，每个引用一个单一的 tree 和一些父提交。
+.sp
+提交（相当于其他系统称为 "变更集" 或 "版本"）代表项目历史中的一个步骤，每个父提交代表一个紧接在前的步骤。有多个父提交的提交代表独立开发线的合并。
+.sp
+所有对象通过其内容的 SHA\-1 哈希值命名，通常写为 40 个十六进制数字的字符串。这样的名称是全局唯一的。通过仅对该提交进行签名，就可以担保通 往该提交的全部历史。第四种对象类型 tag 就是为此目的而提供的。
+.sp
+首次创建时，对象存储在单独的文件中，但为了效率，后续可能被压缩合并为 "包文件"。
+.sp
+称为引用的命名指针标记历史中的有趣点。引用可以包含对象的 SHA\-1 名称或另一个引用的名称（后者称为"符号引用"）。开头为 \fBrefs/head/\fR 的引用包含开发中分支最新提交（或"头部"）的 SHA\-1 名称。感兴趣的标签的 SHA\-1 名称存储在 \fBrefs/tags/\fR 下。名为 \fBHEAD\fR 的符号引用包含当前检出的分支名称。
+.sp
+索引文件初始化时包含所有路径的列表，以及每个路径的一个 blob 对象和一组属性。blob 对象代表当前分支头部文件的内容。属性（最后修改时间、大小等）取自工作树中的相应文件。通过比较这些属性可以发现工作树的后续更改。索引可以用新内容更新，新提交可以从索引中存储的内容创建。
+.sp
+索引还能够为给定路径名存储多个条目（称为"阶段"）。这些阶段用于在进行合并时保存文件的各个未合并版本。
+.SH "安全"
+.sp
+某些配置选项和钩子文件可能会导致 Git 运行任意 shell 命令。因为配置和钩子不会通过 \fBgit clone\fR 复制，所以克隆具有不受信任内容的远程仓库、使用 \fBgit log\fR 检查它们等通常是安全的。
+.sp
+然而，当 \fB\&.git\fR 目录本身来自不受信任的来源时，在该 \fB\&.git\fR 目录（或其周围的工作树）中运行 Git 命令是不安全的。其 config 和 hooks 中的命令会以通常的方式执行。
+.sp
+默认情况下，当仓库属于运行命令的用户以外的其他人时，Git 将拒绝运行。参见 \fBgit-config\fR(1) 中 \fBsafe\&.directory\fR 的条目。虽然这可以帮助保护你在多用户环境中的安全，但请注意，你也可以获取属于你自己的不受信任的仓库（例如，如果你从不受信任的来源提取 zip 文件或 tarball）。在这种情况下，你需要首先"清理"不受信任的仓库。
+.sp
+如果你有一个不受信任的 \fB\&.git\fR 目录，应首先使用 \fBgit clone \-\-no\-local\fR 克隆它以获得干净的副本。Git 确实限制了将由 \fBupload\-pack\fR（处理 clone 或 fetch 的服务器端）运行的选项和钩子集，但请注意，针对 \fBupload\-pack\fR 的攻击面很大，因此这确实带有一定风险。最安全的方法是以非特权用户身份提供仓库服务（通过 \fBgit-daemon\fR(1)、ssh 或其他更改用户 ID 的工具）。参见 \fBgit-upload-pack\fR(1) 的 \fBSECURITY\fR 部分中的讨论。
+.SH "更多文档"
+.sp
+参见"描述"部分中的参考资料以开始使用 Git。以下内容对于首次使用者来说可能比必要的更详细。
+.sp
+\m[blue]\fBGit 用户手册的概念章节\fR\m[]\&\s-2\u[3]\d\s+2 和 \fBgitcore-tutorial\fR(7) 都提供了底层 Git 架构的介绍。
+.sp
+参见 \fBgitworkflows\fR(7) 了解推荐工作流的概述。
+.sp
+另请参见 \m[blue]\fBhowto\fR\m[]\&\s-2\u[4]\d\s+2 文档了解一些有用的例子。
+.sp
+内部机制记录在 \m[blue]\fBGit API 文档\fR\m[]\&\s-2\u[5]\d\s+2 中。
+.sp
+从 CVS 迁移的用户可能还想阅读 \fBgitcvs-migration\fR(7)。
+.SH "作者"
+.sp
+Git 由 Linus Torvalds 发起，目前由 Junio C Hamano 维护。大量贡献来自 Git 邮件列表 <\m[blue]\fBgit@vger\&.kernel\&.org\fR\m[]\&\s-2\u[6]\d\s+2>。\m[blue]\fBhttps://openhub\&.net/p/git/contributors/summary\fR\m[] 提供了更完整的贡献者列表。
+.sp
+如果你有 git\&.git 本身的克隆，\fBgit-shortlog\fR(1) 和 \fBgit-blame\fR(1) 的输出可以显示项目特定部分的作者。
+.SH "报告错误"
+.sp
+向 Git 邮件列表 <\m[blue]\fBgit@vger\&.kernel\&.org\fR\m[]\&\s-2\u[6]\d\s+2> 报告错误，开发和维护主要在那里进行。你不必订阅列表即可发送消息。之前的错误报告和其他讨论可在 \m[blue]\fBhttps://lore\&.kernel\&.org/git\fR\m[] 查看列表存档。
+.sp
+与安全相关的问题应私下向 Git 安全邮件列表 <\m[blue]\fBgit\-security@googlegroups\&.com\fR\m[]\&\s-2\u[7]\d\s+2> 披露。
+.SH "参见"
+.sp
+\fBgittutorial\fR(7), \fBgittutorial-2\fR(7), \fBgiteveryday\fR(7), \fBgitcvs-migration\fR(7), \fBgitglossary\fR(7), \fBgitcore-tutorial\fR(7), \fBgitcli\fR(7), \m[blue]\fBGit 用户手册\fR\m[]\&\s-2\u[1]\d\s+2, \fBgitworkflows\fR(7)
+.SH "GIT"
+.sp
+属于 \fBgit\fR(1) 套件的一部分
+.SH "NOTES"
+.IP " 1." 4
+Git 用户手册
+.RS 4
+\%file:///usr/share/doc/git-doc/user-manual.html
+.RE
+.IP " 2." 4
+Trace2 文档
+.RS 4
+\%file:///usr/share/doc/git-doc/technical/api-trace2.html
+.RE
+.IP " 3." 4
+Git 用户手册的概念章节
+.RS 4
+\%file:///usr/share/doc/git-doc/user-manual.html#git-concepts
+.RE
+.IP " 4." 4
+howto 文档
+.RS 4
+\%file:///usr/share/doc/git-doc/howto-index.html
+.RE
+.IP " 5." 4
+Git API 文档
+.RS 4
+\%file:///usr/share/doc/git-doc/technical/api-index.html
+.RE
+.IP " 6." 4
+git@vger.kernel.org
+.RS 4
+\%mailto:git@vger.kernel.org
+.RE
+.IP " 7." 4
+git-security@googlegroups.com
+.RS 4
+\%mailto:git-security@googlegroups.com
+.RE
+.SH "[中文版最新更新]"
+.BR 2026.07.12
+.SH "[中文版维护人]"
+.SH "[中国 Linux 论坛中文手册页翻译计划]"
+.BI https://github.com/man-pages-zh/manpages-zh
