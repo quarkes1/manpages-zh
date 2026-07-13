@@ -1,0 +1,83 @@
+.TH "NPM" "1" "2026年7月" "NPM@12.0.0" ""
+.SH "名称"
+\fBnpm\fR \- JavaScript 包管理器
+.SS "概述"
+.P
+.RS 2
+.nf
+npm
+.fi
+.RE
+.SS "版本"
+.P
+12.0.0
+.SS "描述"
+.P
+npm 是 Node JavaScript 平台的包管理器。它负责将模块安装到合适的位置以便 node 能够找到它们，并智能地管理依赖冲突。
+.P
+运行 \fBnpm help\fR 获取可用命令的列表。
+.SS "重要提示"
+.P
+npm 默认预配置为使用 npm 公共注册表 https://registry.npmjs.org。使用 npm 公共注册表需遵守 https://docs.npmjs.com/policies/terms 上的使用条款。你可以配置 npm 使用任何兼容的注册表，甚至可以运行自己的注册表。
+.SS "入门"
+.P
+在任何 node 程序中，首先要运行的命令很可能是 \fBnpm install\fR 来安装依赖。
+你也可以运行 \fBnpm install blerg\fR 来安装最新版本的 "blerg"。使用 \fBnpm search\fR 命令查看公共注册表中所有可用的包，使用 \fBnpm ls\fR 显示已安装的内容。
+.SS "依赖"
+.P
+如果包使用 git URL 列出依赖，npm 将使用 \fBgit\fR 命令安装该依赖。如果某个包是原生 node 模块并需要编译 C++ 代码，npm 将使用 \fBnode-gyp\fR 来完成此任务。
+.SS "目录"
+.P
+npm 有两种操作模式：
+.RS 0
+.IP \(bu 4
+本地模式：包安装到当前项目目录的 \fB./node_modules\fR，可执行文件安装到 \fB./node_modules/.bin\fR。
+.IP \(bu 4
+全局模式：包安装到 \fB$NPM_CONFIG_PREFIX/lib/node_modules\fR，可执行文件安装到 \fB$NPM_CONFIG_PREFIX/bin\fR。
+.RE 0
+.P
+本地模式是默认的。在任何命令上使用 \fB-g\fR 或 \fB--global\fR 以全局模式运行。
+.SS "开发者用法"
+.P
+如果你使用 npm 开发和发布代码，请查看以下帮助主题：
+.RS 0
+.IP \(bu 4
+json: 创建 package.json 文件。
+.IP \(bu 4
+link: 将当前工作代码链接到 Node 的路径中。
+.IP \(bu 4
+install: 从注册表安装他人的代码。
+.IP \(bu 4
+login: 登录注册表并存储凭据。
+.IP \(bu 4
+publish: 将代码上传到注册表。
+.RE 0
+.SS "配置"
+.P
+npm 从 5 个地方读取配置选项：命令行开关（\fB--key val\fR）、环境变量（\fBNPM_CONFIG_KEY=val\fR）、用户配置（\fB$HOME/.npmrc\fR）、全局配置（\fB./etc/npmrc\fR）、默认值。详见 \fBnpm help config\fR。
+.SS "贡献"
+.P
+欢迎提交补丁！阅读贡献指南 \fI\(lahttps://github.com/npm/cli/blob/latest/CONTRIBUTING.md\(ra\fR 了解如何参与。
+.SS "错误"
+.P
+发现问题请在 \fI\(lahttps://github.com/npm/cli/issues\(ra\fR 报告。
+.SS "参见"
+.RS 0
+.IP \(bu 4
+npm help help
+.IP \(bu 4
+\fBpackage.json\fR
+.IP \(bu 4
+npm help npmrc
+.IP \(bu 4
+npm help config
+.IP \(bu 4
+npm help install
+.IP \(bu 4
+npm help publish
+.RE 0
+.SH "[中文版最新更新]"
+.BR 2026.07.12
+.SH "[中文版维护人]"
+.SH "[中国 Linux 论坛中文手册页翻译计划]"
+.BI https://github.com/man-pages-zh/manpages-zh
