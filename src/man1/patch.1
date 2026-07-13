@@ -1,0 +1,1163 @@
+.\" patch man page
+.ds = \-\^\-
+.de Sp
+.if t .sp .3
+.if n .sp
+..
+.ds Cw CW
+.if \n(.g .if f CR .ds Cw CR
+.ds fC \f(\*(Cw
+.TH PATCH 1 "" GNU
+.SH 名称
+patch \- 将 diff 文件应用到原始文件
+.SH 概述
+.B patch
+.RI [ 选项 ]
+.RI [ 原始文件
+.RI [ 补丁文件 ]]
+.Sp
+通常只需：
+.Sp
+.BI "patch \-p" "num"
+.BI < 补丁文件
+.SH 描述
+.B patch
+接受一个包含
+.B diff
+程序生成的差异列表的补丁文件
+.IR patchfile ，
+并将这些差异应用到一个或多个原始文件上，生成补丁后的版本。
+通常补丁后的版本会替换原始文件。可通过
+.B \-b
+或
+.B \*=backup
+选项创建备份。
+待修补的文件名通常从补丁文件中获取，
+但如果只有一个文件需要修补，可以在命令行上指定为
+.IR originalfile 。
+.PP
+启动时，
+.B patch
+会尝试判断差异列表的类型，除非被
+\fB\-c\fP (\fB\*=context\fP)、\fB\-e\fP (\fB\*=ed\fP)、\fB\-n\fP (\fB\*=normal\fP) 或
+\fB\-u\fP (\fB\*=unified\fP) 选项覆盖。
+上下文差异（旧式、新式和 unified）和
+普通差异由
+.B patch
+程序本身应用，而
+.B ed
+差异则通过管道传递给
+.BR ed (1)
+编辑器。
+.PP
+.B patch
+会尝试跳过任何前导垃圾内容，应用差异，
+然后跳过任何尾随垃圾内容。
+因此你可以将包含差异列表的电子邮件直接喂给
+.BR patch ，
+它应该能正常工作。
+如果整个差异被一致地缩进、行尾为 CRLF、
+或差异被一次或多次封装（通过在以 "\fB\-\fP" 开头的行前添加 "\fB\- \fP"，如 Internet RFC 934 所述），
+这些都会被考虑在内。
+移除缩进或封装后，
+以
+.B #
+开头的行被视为注释而被忽略。
+.PP
+对于上下文差异，以及在较小程度上对于普通差异，
+.B patch
+可以检测到补丁中提到的行号不正确，
+并尝试找到应用每个补丁块的正确位置。
+首先它按照补丁块中提到的行号进行尝试，加减之前补丁块使用的偏移量。
+如果不正确，
+.B patch
+会前后扫描以匹配上下文中给出的行。
+首先
+.B patch
+寻找所有上下文行都匹配的位置。
+如果找不到这样的位置，且这是上下文差异，且最大模糊因子
+设置为 1 或更大，则进行另一次扫描，忽略上下文的第一行和最后一行。
+如果仍然失败，且最大模糊因子设置为 2 或更大，
+则忽略上下文的前两行和后两行，
+再进行一次扫描。
+（默认最大模糊因子为 2。）
+.PP
+前缀上下文少于后缀上下文（应用模糊后）的补丁块，
+如果其第一行号为 1，则必须应用到文件开头。
+前缀上下文多于后缀上下文（应用模糊后）的补丁块，
+必须应用到文件末尾。
+.PP
+如果
+.B patch
+找不到安装该补丁块的位置，则将其写入拒绝文件，
+通常是输出文件名加
+.B \&.rej
+后缀；如果
+.B \&.rej
+会导致文件名过长，则改为
+.B #
+（如果即使追加单个字符
+.B #
+也会使文件名过长，则
+.B #
+替换文件名的最后一个字符）。
+.PP
+被拒绝的补丁块以 unified 或 context diff 格式输出。
+如果输入是普通 diff，则许多上下文为空。
+拒绝文件中补丁块的行号可能与补丁文件中的不同：
+它们反映了
+.B patch
+认为失败的补丁块在新文件中大致应处的位置，而非原文件中的位置。
+.PP
+每个补丁块完成后，会告知你该补丁块
+是否失败，如果失败，还会告知
+.B patch
+认为该补丁块应位于（新文件中的）哪一行。
+如果补丁块安装在不同于 diff 中指定的行号位置，
+会告知你偏移量。
+单个较大的偏移量
+.I 可能
+表明补丁块被安装在了
+错误位置。
+如果使用了模糊因子来匹配，也会告知你，这种情况下
+你应该稍加怀疑。
+如果给出了
+.B \*=verbose
+选项，还会告知你哪些补丁块完全匹配。
+.PP
+如果在命令行上没有指定原始文件
+.IR origfile ，
+.B patch
+会尝试从前导垃圾内容中推断要编辑的文件名，
+使用以下规则。
+.LP
+首先，
+.B patch
+按如下方式获取候选文件名的有序列表：
+.RS "\w'  'u"
+.IP \(bu "\w'\(bu  'u"
+如果头部是上下文差异，
+.B patch
+取头部中的旧文件名和新文件名。
+如果文件名没有足够的斜杠以满足
+.BI \-p num
+或
+.BI \*=strip= num
+选项的要求，则忽略该文件名。
+.B /dev/null
+名称也被忽略。
+.IP \(bu
+如果前导垃圾内容中有
+.B Index:
+行，
+并且旧名称和新名称都不存在，或者
+.B patch
+符合 POSIX 标准，
+.B patch
+取
+.B Index:
+行中的名称。
+.IP \(bu
+为便于以下规则，
+候选文件名的顺序视为（旧、新、索引），
+无论它们在头部中出现的顺序如何。
+.RE
+.LP
+然后
+.B patch
+从候选列表中按如下方式选择文件名：
+.RS "\w'  'u"
+.IP \(bu "\w'\(bu  'u"
+如果某些命名文件存在，
+.B patch
+在符合 POSIX 标准时选择第一个名称，
+否则选择最佳名称。
+.IP \(bu
+如果
+.B patch
+未忽略 RCS、ClearCase、Perforce 和 SCCS（参见
+.BI "\-g " num
+或
+.BI \*=get= num
+选项），且无命名文件存在
+但找到了 RCS、ClearCase、Perforce 或 SCCS 主文件，
+.B patch
+选择具有
+RCS、ClearCase、Perforce 或 SCCS 主文件的第一个命名文件。
+.IP \(bu
+如果无命名文件存在，
+未找到 RCS、ClearCase、Perforce 或 SCCS 主文件，
+给出了一些名称，
+.B patch
+不遵循 POSIX 标准，
+且补丁似乎是要创建文件，
+.B patch
+选择需要创建最少目录的最佳名称。
+.IP \(bu
+如果上述启发式方法没有产生任何文件名，则会询问你
+要修补的文件名，并且
+.B patch
+选择该名称。
+.RE
+.LP
+要确定非空文件名列表中的
+.I 最佳
+名称，
+.B patch
+首先选取路径名组件最少的名称；
+然后从这些名称中，选取基文件名最短的名称；
+再从这些名称中，选取最短的名称；
+最后，选取第一个剩余的名称。
+.PP
+此外，如果前导垃圾内容中包含
+.B Prereq:
+行，
+.B patch
+从先决条件行中取第一个单词（通常是版本号）
+并检查原始文件是否能找到该单词。
+如果找不到，
+.B patch
+在继续之前请求确认。
+.PP
+所有这些的最终效果是，你应该能够运行
+类似以下 shell 命令：
+.Sp
+.RS
+\fBpatch \-d /usr/src/local/blurfl\fP
+.RE
+.Sp
+并直接从标准输入读取的补丁中修补
+.B blurfl
+目录中的文件。
+.PP
+如果补丁文件包含多个补丁，
+.B patch
+会尝试将它们各自视为来自独立的补丁文件。
+这意味着，除其他事项外，
+每个差异列表的文件名必须单独确定，
+且每个差异列表之前的垃圾内容
+包含有趣的信息，如文件名和修订级别，
+如前述。当处理多个补丁时，
+.B patch
+会将每个补丁逐一应用。如果一个补丁应用失败，
+后续补丁仍会继续处理。补丁文件中的每个 diff 列表
+被视为独立的修补操作。
+.PP
+在打开文件时，
+.B patch
+会检查文件是否为只读或受版本控制系统管理。
+如果文件受 RCS 或 SCCS 控制且不存在或为只读，
+.B patch
+的行为由
+.B \-g
+或
+.B \*=get
+选项控制。对于二进制文件，
+.B patch
+会尝试在无需用户干预的情况下正确处理，
+除非使用
+.B \*=binary
+选项明确覆盖。
+.SH 选项
+.TP 3
+\fB\-b\fP 或 \fB\*=backup\fP
+创建备份文件。
+也就是说，在修补文件时，
+重命名或复制原始文件而非删除它。
+有关备份文件名如何确定的详细信息，
+请参见
+.B \-V
+或
+.B \*=version\-control
+选项。
+.TP
+.B \*=backup\-if\-mismatch
+当补丁与文件不完全匹配且未另行请求备份时备份文件。
+这是默认行为，除非
+.B patch
+符合 POSIX 标准。
+.TP
+.B \*=no\-backup\-if\-mismatch
+当补丁与文件不完全匹配且未另行请求备份时不备份文件。
+如果
+.B patch
+符合 POSIX 标准，这是默认行为。
+.TP
+\fB\-B\fP \fIpref\fP 或 \fB\*=prefix=\fP\fIpref\fP
+使用
+.B simple
+方法确定备份文件名（参见
+.BI "\-V " method
+或
+.BI "\*=version\-control " method
+选项），并在生成备份文件名时在文件名前添加
+.IR pref 。
+例如，使用
+.B "\-B\ /junk/"
+时，
+.B src/patch/util.c
+的简单备份文件名为
+.BR /junk/src/patch/util.c 。
+.TP
+\fB\*=binary\fP
+以二进制模式写入所有文件，标准输出和
+.BR /dev/tty 除外。
+读取时，禁用将 CRLF 行尾转换为 LF
+行尾的启发式方法。在 POSIX 系统上，当应用在非 POSIX 系统上生成的补丁到非 POSIX 文件时需要此选项。
+（在 POSIX 系统上，文件读写从不转换行尾。
+在 Windows 上，默认情况下读写会转换行尾，
+如果行尾重要，应使用
+.B "diff \*=binary"
+生成补丁。）
+.TP
+\fB\-c\fP 或 \fB\*=context\fP
+将补丁文件解释为普通上下文差异。
+.TP
+\fB\-d\fP \fIdir\fP 或 \fB\*=directory=\fP\fIdir\fP
+立即切换到目录
+.IR dir ，
+在执行任何其他操作之前。
+.TP
+\fB\-D\fP \fIdefine\fP 或 \fB\*=ifdef=\fP\fIdefine\fP
+使用
+.BR "#ifdef .\|.\|. #endif"
+结构标记更改，以
+.I define
+作为区分符号。
+.TP
+.B "\*=dry\-run"
+打印应用补丁的结果，而不实际更改任何文件。
+.TP
+\fB\-e\fP 或 \fB\*=ed\fP
+将补丁文件解释为
+.B ed
+脚本。
+.TP
+\fB\-E\fP 或 \fB\*=remove\-empty\-files\fP
+移除应用补丁后变为空的输出文件。
+通常此选项不是必需的，因为
+.B patch
+可以检查头部的时间戳以确定文件在修补后
+是否应存在。
+但如果输入不是上下文差异，或
+.B patch
+符合 POSIX 标准，
+.B patch
+不会移除空的已修补文件，除非给出了此选项。
+当
+.B patch
+移除文件时，它还会尝试移除任何空的祖先目录。
+.TP
+\fB\-f\fP 或 \fB\*=force\fP
+假设用户确切知道自己在做什么，并且不提出任何问题。
+跳过头部未说明要修补哪个文件的补丁；
+即使补丁中
+.B Prereq:
+行的版本不正确也修补文件；
+即使补丁看起来像是反向的，也假设其未被反转。
+此选项不抑制评论；请使用
+.B \-s
+来实现。
+.TP
+\fB\-F\fP \fInum\fP 或 \fB\*=fuzz=\fP\fInum\fP
+设置最大模糊因子。
+此选项仅适用于有上下文的差异，并且使
+.B patch
+在寻找安装补丁块的位置时忽略最多该行数的上下文。
+请注意，较大的模糊因子会增加错误补丁的风险。
+默认模糊因子为 2。模糊因子大于或等于
+上下文差异中的上下文行数（通常为 3）时，将忽略所有
+上下文。
+.TP
+\fB\-g\fP \fInum\fP 或 \fB\*=get=\fP\fInum\fP
+此选项控制
+.B patch
+在文件受 RCS 或 SCCS 控制、
+不存在或为只读且与默认版本匹配时，
+或在文件受 ClearCase 或 Perforce 控制且不存在时的行为。
+如果
+.I num
+为正数，
+.B patch
+从版本控制系统获取（或检出）文件；如果为零，
+.B patch
+忽略 RCS、ClearCase、Perforce 和 SCCS
+并且不获取文件；如果为负数，
+.B patch
+询问用户是否要获取文件。
+此选项的默认值由
+.B PATCH_GET
+环境变量给出（如果设置）；否则默认值为零。
+.TP
+.B "\*=help"
+打印选项摘要并退出。
+.TP
+\fB\-i\fP \fIpatchfile\fP 或 \fB\*=input=\fP\fIpatchfile\fP
+从
+.I patchfile
+读取补丁。
+如果
+.I patchfile
+为
+.BR \- ，
+则从标准输入读取，这是默认行为。
+.TP
+\fB\-l\fP 或 \fB\*=ignore\-whitespace\fP
+松散匹配模式，以防文件中的制表符或空格
+被篡改。
+补丁文件中的一个或多个空白字符的任意序列匹配原始文件中的任何序列，
+行尾的空白序列被忽略。
+普通字符仍必须完全匹配。
+上下文的每一行仍必须匹配原始文件中的一行。
+.TP
+\fB\*=merge\fP 或 \fB\*=merge=merge\fP 或 \fB\*=merge=diff3\fP
+将补丁文件合并到原始文件中，类似于
+.BR diff3 (1) 或
+.BR merge (1)。
+如果发现冲突，
+.B patch
+输出警告并使用
+.B <<<<<<<
+和
+.B >>>>>>>
+行包围冲突。
+典型冲突如下所示：
+.LP
+.RS
+.nf
+.ne 7
+\*(fC<<<<<<<\fP
+.I 来自原始文件的行
+\*(fC|||||||\fP
+.I 补丁中原始的行
+\*(fC=======\fP
+.I 补丁中新的行
+\*(fC>>>>>>>\fP
+.RE
+.fi
+.IP "" 3
+\fB\*=merge\fP 的可选参数决定冲突的输出格式：
+diff3 格式显示带有补丁中原始行的 \*(fC|||||||\fP 部分；
+merge 格式缺少此部分。merge 格式是默认格式。
+.Sp
+此选项隐含 \fB\*=forward\fP，并且不考虑
+\fB\--fuzz\fR=\fInum\fP 选项。
+.TP
+\fB\-n\fP 或 \fB\*=normal\fP
+将补丁文件解释为普通 diff。
+.TP
+\fB\-N\fP 或 \fB\*=forward\fP
+当补丁不适用时，
+.B patch
+通常会尝试反向应用第一个补丁块来检查补丁是否已经应用过。
+\fB\*=forward\fP 选项阻止该行为。另请参见
+.BR \-R 。
+.TP
+\fB\-o\fP \fIoutfile\fP 或 \fB\*=output=\fP\fIoutfile\fP
+将输出发送到
+.I outfile
+而不是就地修补文件。
+如果
+.I outfile
+是要修补的文件之一，请不要使用此选项。
+当
+.I outfile
+为
+.B \- 时，将输出发送到标准输出，并将通常发送到标准输出的任何消息发送到标准错误。
+.TP
+\fB\-p\fP\fInum\fP 或 \fB\*=strip\fP\fB=\fP\fInum\fP
+从补丁文件中找到的每个文件名中剥离包含
+.I num
+个前导斜杠的最小前缀。
+一个或多个相邻斜杠计为一个斜杠。
+这控制如何处理补丁文件中找到的文件名，以防
+你的文件保存在与发送补丁的人不同的目录中。
+例如，假设补丁文件中的文件名为：
+.Sp
+.RS
+\fB/u/howard/src/blurfl/blurfl.c\fP
+.RE
+.Sp
+设置
+.B \-p0
+给出完整的文件名不变，
+.B \-p1
+给出
+.Sp
+.RS
+\fBu/howard/src/blurfl/blurfl.c\fP
+.RE
+.Sp
+（无前导斜杠），
+.B \-p4
+给出
+.Sp
+.RS
+\fBblurfl/blurfl.c\fP
+.RE
+.Sp
+而完全不指定
+.B \-p
+则只给出 \fBblurfl.c\fP。
+最终得到的文件名会在当前目录
+或
+.B \-d
+选项指定的目录中查找。
+.TP
+.B \*=posix
+更严格地遵循 POSIX 标准，具体如下：
+.RS "\w'  'u"
+.IP \(bu "\w'\(bu  'u"
+从 diff 头部推断文件名时，从列表（旧、新、索引）中取第一个存在的文件。
+.IP \(bu
+不移除修补后为空的文件。
+.IP \(bu
+不询问是否从 RCS、ClearCase、Perforce 或 SCCS 获取文件。
+.IP \(bu
+要求所有选项在命令行中位于文件之前。
+.IP \(bu
+不匹配时不备份文件。
+.RE
+.TP
+.BI \*=quoting\-style= word
+使用风格
+.I word
+引用输出名称。
+.I word
+应为以下之一：
+.RS
+.TP
+.B literal
+按原样输出名称。
+.TP
+.B shell
+如果名称包含 shell 元字符或会导致歧义输出，
+则为 shell 引用名称。
+.TP
+.B shell-always
+总是为 shell 引用名称，即使通常不需要引用。
+.TP
+.B c
+如同 C 语言字符串一样引用名称。
+.TP
+.B escape
+与
+.B c
+相同，但省略周围的双引号字符。
+.LP
+你可以通过环境变量
+.B QUOTING_STYLE
+指定
+.B \*=quoting\-style
+选项的默认值。
+如果该环境变量未设置，默认值为
+.BR shell 。
+.RE
+.TP
+\fB\-r\fP \fIrejectfile\fP 或 \fB\*=reject\-file=\fP\fIrejectfile\fP
+将拒绝内容放入
+.I rejectfile
+而不是默认的
+.B \&.rej
+文件。当
+.I rejectfile
+为
+.B \- 时，丢弃拒绝内容。
+.TP
+\fB\-R\fP 或 \fB\*=reverse\fP
+假设此补丁是在旧文件和新文件互换的情况下创建的。
+（是的，恐怕这确实偶尔会发生，人性使然。）
+.B patch
+在应用前尝试反转每个补丁块。
+拒绝内容以反转格式输出。
+.B \-R
+选项不适用于
+.B ed
+差异脚本，因为信息太少
+无法重建反向操作。
+.Sp
+如果补丁的第一个补丁块失败，
+.B patch
+会反转该补丁块以查看是否可以这样应用。
+如果可以，会询问你是否要设置
+.B \-R
+选项。
+如果不可以，补丁继续正常应用。
+（注意：如果补丁是普通 diff 且第一个命令是追加（即本应为删除），
+此方法无法检测反向补丁，因为追加总是成功，
+因为空上下文可匹配任何位置。
+幸运的是，大多数补丁添加或更改行而非删除行，因此大多数
+反向普通 diff 以删除开始，这会失败，触发
+启发式方法。）
+.TP
+\fB\*=read\-only=\fP\fIbehavior\fP
+尝试修改只读文件时按要求执行：
+.B ignore
+潜在问题，
+.B warn
+（默认），或
+.B fail 。
+.TP
+\fB\*=reject\-format=\fP\fIformat\fP
+以指定的
+.I format
+（
+.B context
+或
+.B unified
+）生成拒绝文件。
+不使用此选项时，如果输入补丁是 unified diff 格式，
+拒绝的补丁块以 unified diff 格式输出，否则以普通上下文 diff 格式输出。
+.TP
+\fB\-s\fP 或 \fB\*=silent\fP 或 \fB\*=quiet\fP
+安静工作，除非发生错误。
+.TP
+\fB\*=follow\-symlinks\fP
+查找输入文件时，跟随符号链接。替换符号链接，
+而不是修改符号链接指向的文件。
+Git 风格的符号链接补丁将不再适用。
+此选项是为了与旧版
+.B patch
+向后兼容而存在；不鼓励使用。
+.TP
+\fB\-t\fP 或 \fB\*=batch\fP
+抑制类似
+.B \-f
+的问题，
+但做出一些不同的假设：
+跳过头部不包含文件名的补丁（与
+.B \-f
+相同）；
+跳过文件中
+.B Prereq:
+行版本不正确的补丁；
+如果补丁看起来是反向的，则假设其是反向的。
+.TP
+\fB\-T\fP 或 \fB\*=set\-time\fP
+根据上下文 diff 头部中的时间戳设置修补文件的修改和访问时间。
+除非在时间戳中指定，
+否则假定上下文 diff 头部使用的是本地时间。
+.Sp
+不建议使用此选项与不包含时区的时间戳，
+因为使用本地时间的补丁不易被其他时区的人使用，
+并且当地夏令时调整时钟回拨时，
+本地时间戳存在歧义。请确保时间戳包含时区，
+或使用 UTC 生成补丁并改用
+.B \-Z
+或
+.B \*=set\-utc
+选项。
+.TP
+\fB\-u\fP 或 \fB\*=unified\fP
+将补丁文件解释为 unified 上下文差异。
+.TP
+\fB\-v\fP 或 \fB\*=version\fP
+打印
+.B patch
+的修订头部和补丁级别，然后退出。
+.TP
+\fB\-V\fP \fImethod\fP 或 \fB\*=version\-control=\fP\fImethod\fP
+使用
+.I method
+确定
+备份文件名。该方法也可以通过
+.B PATCH_VERSION_CONTROL
+（或如果未设置，则为
+.BR VERSION_CONTROL ）
+环境变量给出，此选项会覆盖该变量。
+该方法不影响是否制作备份文件；
+它仅影响所制作的备份文件的名称。
+.Sp
+.I method
+的值类似于 GNU Emacs version-control 变量；
+.B patch
+也识别更具描述性的同义词。
+.I method
+的有效值为
+（接受唯一的缩写）：
+.RS
+.TP 3
+\fBexisting\fP 或 \fBnil\fP
+对已有编号备份的文件制作编号备份，
+否则制作简单备份。
+这是默认值。
+.TP
+\fBnumbered\fP 或 \fBt\fP
+制作编号备份。
+.I F
+的编号备份文件名为
+.IB F .~ N ~
+其中
+.I N
+是版本号。
+.TP
+\fBsimple\fP 或 \fBnever\fP
+制作简单备份。
+.B \-B
+或
+.BR \*=prefix 、
+.B \-Y
+或
+.BR \*=basename\-prefix 、
+以及
+.B \-z
+或
+.BR \*=suffix
+选项指定简单备份文件名。
+如果未给出任何这些选项，则使用简单备份后缀；
+它是
+.B SIMPLE_BACKUP_SUFFIX
+环境变量的值（如果已设置），否则为
+.BR \&.orig 。
+.PP
+对于编号备份或简单备份，
+如果备份文件名过长，则改用备份后缀
+.BR ~ ；
+如果即使追加
+.B ~
+也会使名称过长，则
+.B ~
+替换文件名的最后一个字符。
+.RE
+.TP
+\fB\*=verbose\fP
+输出关于正在执行的工作的额外信息。
+.TP
+\fB\-x\fP \fInum\fP 或 \fB\*=debug=\fP\fInum\fP
+设置仅对
+.B patch
+开发者有兴趣的内部调试标志。
+.TP
+\fB\-Y\fP \fIpref\fP 或 \fB\*=basename\-prefix=\fP\fIpref\fP
+使用
+.B simple
+方法确定备份文件名（参见
+.BI "\-V " method
+或
+.BI "\*=version\-control " method
+选项），并在生成备份文件名时在文件名的基名前添加
+.IR pref 。
+例如，使用
+.B "\-Y\ .del/"
+时，
+.B src/patch/util.c
+的简单备份文件名为
+.BR src/patch/.del/util.c 。
+.TP
+\fB\-z\fP \fIsuffix\fP 或 \fB\*=suffix=\fP\fIsuffix\fP
+使用
+.B simple
+方法确定备份文件名（参见
+.BI "\-V " method
+或
+.BI "\*=version\-control " method
+选项），并使用
+.I suffix
+作为后缀。
+例如，使用
+.B "\-z\ -"
+时，
+.B src/patch/util.c
+的备份文件名为
+.BR src/patch/util.c- 。
+.TP
+\fB\-Z\fP 或 \fB\*=set\-utc\fP
+根据上下文 diff 头部中的时间戳设置修补文件的修改和访问时间。
+除非在时间戳中指定，
+否则假定上下文 diff 头部使用的是协调世界时
+（UTC，通常称为 GMT）。另请参见
+.B \-T
+或
+.B \*=set\-time
+选项。
+.Sp
+.B \-Z
+或
+.B \*=set\-utc
+和
+.B \-T
+或
+.B \*=set\-time
+选项通常避免设置文件的时间，如果文件的原始时间
+与补丁头部给出的时间不匹配，或文件的
+内容与补丁不完全匹配。
+但如果给出了
+.B \-f
+或
+.B \*=force
+选项，则无论是否匹配都会设置文件时间。
+.Sp
+由于
+.B diff
+输出格式的限制，这些选项无法更新内容
+未更改的文件的时间。此外，如果使用这些选项，应移除
+（例如使用
+.BR "make\ clean" ）
+所有依赖于已修补文件的文件，以免后续
+.B make
+调用被已修补文件的时间混淆。
+.SH 环境变量
+.TP 3
+.B PATCH_GET
+指定
+.B patch
+默认是否从 RCS、ClearCase、Perforce
+或 SCCS
+获取缺失或只读文件；请参见
+.B \-g
+或
+.B \*=get
+选项。
+.TP
+.B POSIXLY_CORRECT
+如果设置，
+.B patch
+默认更严格地遵循 POSIX 标准：
+请参见
+.B \*=posix
+选项。
+.TP
+.B QUOTING_STYLE
+.B \*=quoting\-style
+选项的默认值。
+.TP
+.B SIMPLE_BACKUP_SUFFIX
+用于简单备份文件名的扩展名，代替
+.BR \&.orig 。
+.TP
+\fBTMPDIR\fP、\fBTMP\fP、\fBTEMP\fP
+放置临时文件的目录；
+.B patch
+使用此列表中第一个已设置的环境变量。
+如果都未设置，默认值取决于系统；
+在 Unix 主机上通常为
+.BR /tmp 。
+.TP
+\fBVERSION_CONTROL\fP 或 \fBPATCH_VERSION_CONTROL\fP
+选择版本控制风格；请参见
+.B \-V
+或
+.B \*=version\-control
+选项。
+.SH 文件
+.TP 3
+.IB $TMPDIR "/p*"
+临时文件
+.TP
+.B /dev/tty
+控制终端；用于获取向用户提出问题的答案
+.SH 参见
+.BR diff (1),
+.BR ed (1),
+.BR merge (1).
+.Sp
+Marshall T. Rose 和 Einar A. Stefferud，
+消息封装提议标准，
+Internet RFC 934 <https://datatracker.ietf.org/doc/html/rfc934> (1985-01)。
+.SH "补丁发送者注意事项"
+如果你要发送补丁，有几件事需要牢记。
+.PP
+系统地创建补丁。
+使用版本控制系统时这应该很容易；
+例如 Git 用户可以使用
+.BR "git diff" 。
+否则，一个好方法是命令
+.BI "diff\ \-Naur\ " "old\ new"
+其中
+.I old
+和
+.I new
+标识旧目录和新目录。
+名称
+.I old
+和
+.I new
+不应包含任何斜杠。
+.PP
+如果补丁需要同时传达文件时间戳和内容，其
+.B diff
+命令头部应使用传统 Unix 格式的通用时间日期，
+以便补丁接收者可以使用
+.B \-Z
+或
+.B \*=set\-utc
+选项。
+以下是使用 Bourne shell 语法生成此类头部的示例命令：
+.Sp
+.RS
+\fBLC_ALL=C TZ=UTC0 diff \-Naur myprog\-2.7 myprog\-2.8\fP
+.RE
+.PP
+告诉接收者如何应用补丁——
+告诉他们要切换到哪个目录，以及使用哪些
+.B patch
+选项。推荐使用选项字符串
+.B "\-Np1" 。
+通过假装自己是接收者并将补丁应用于原始文件的副本来测试你的过程。
+.PP
+通过保留一个
+.B patchlevel.h
+文件，在发送的补丁文件中将其作为第一个 diff 来递增补丁级别，
+可以省去人们很多麻烦。
+如果在补丁中放入
+.B Prereq:
+行，它在没有警告的情况下不会让他们
+按错误顺序应用补丁。
+.PP
+你可以通过发送比较
+.B /dev/null
+或 Epoch（1970-01-01 00:00:00 UTC）的空文件
+与要创建的文件的 diff 来创建文件。
+这仅在你想要创建的文件在目标目录中尚不存在时才有效。
+相反，你可以通过发送比较要删除的文件
+与 Epoch 的空文件的上下文 diff 来删除文件。
+除非
+.B patch
+符合 POSIX 标准且未给出
+.B \-E
+或
+.B \*=remove\-empty\-files
+选项，
+否则该文件将被移除。
+生成创建和删除文件的补丁的简单方法是使用 GNU
+.B diff
+的
+.B \-N
+或
+.B \*=new\-file
+选项。
+.PP
+如果接收者应该使用
+.BI \-p N
+选项，不要发送如下所示的输出：
+.Sp
+.RS
+.ft \*(Cw
+.ne 3
+diff \-Naur v2.0.29/prog/README prog/README
+.br
+\-\^\-\^\- v2.0.29/prog/README   Mon Mar 10 15:13:12 2024
+.br
++\^+\^+ prog/README   Mon Mar 17 14:58:22 2024
+.ft
+.RE
+.Sp
+因为这两个文件名的斜杠数量不同，
+且不同版本的
+.B patch
+对文件名的解释不同。
+为避免混淆，应发送如下所示的输出：
+.Sp
+.RS
+.ft \*(Cw
+.ne 3
+diff \-Naur v2.0.29/prog/README v2.0.30/prog/README
+.br
+\-\^\-\^\- v2.0.29/prog/README   Mon Mar 10 15:13:12 2024
+.br
++\^+\^+ v2.0.30/prog/README   Mon Mar 17 14:58:22 2024
+.ft
+.RE
+.Sp
+.PP
+避免发送比较备份文件名（如
+.BR README.orig ）的补丁，
+因为这可能混淆
+.B patch
+，使其修补备份文件而非真实文件。
+应发送比较不同目录中相同基文件名的补丁，
+例如
+.B old/README
+和
+.BR new/README 。
+.PP
+注意不要发送反向补丁，因为这会使人们疑惑
+他们是否已经应用了该补丁。
+.PP
+尽量不要让你的补丁修改衍生文件
+（例如，当 makefile 中有
+.B "configure: configure.ac"
+行时修改文件
+.B configure ），
+因为接收者应该能够重新生成衍生文件。
+如果必须发送衍生文件的 diff，
+请使用 UTC 生成 diff，
+让接收者使用
+.B \-Z
+或
+.B \*=set\-utc
+选项应用补丁，并要求他们移除任何未修补的、依赖于已修补文件的文件
+（例如使用
+.BR "make\ clean" ）。
+.PP
+虽然你可以将 582 个差异列表放入一个文件中，
+但将相关补丁分组到单独的文件中可能更明智，
+以防出现问题。
+.SH 诊断
+诊断通常表明
+.B patch
+无法解析你的补丁文件。
+.PP
+如果给出
+.B \*=verbose
+选项，消息
+.B Hmm.\|.\|.
+表示补丁文件中有未处理的文本，
+.B patch
+正试图推断该文本中是否存在补丁，如果是，
+是什么类型的补丁。
+.PP
+.B patch
+的退出状态为：
+0（所有补丁块成功应用）、
+1（部分补丁块无法应用或有合并冲突）、
+2（更严重的问题）。
+在一组补丁上循环应用时，应检查此退出状态，
+以免将后续补丁应用于已部分修补的文件。
+.PP
+常见的诊断消息包括：
+.B "File to patch:"
+提示用户输入要修补的文件名；
+.B "No file to patch, skipping..."
+表示
+.B patch
+无法确定要修补的文件；
+.B "Skipping patch..."
+表示某个补丁因故被跳过（例如缺少文件名或版本不匹配）。
+.PP
+如果
+.B patch
+在解析补丁文件时遇到格式错误，会输出类似
+.B "malformed patch at line"
+的消息，指示出错的近似位置。
+.SH 注意事项
+上下文差异无法可靠地表示空文件的创建或删除、
+空目录或特殊文件（如符号链接）。
+也无法表示文件元数据的更改，如所有权、权限、
+或一个文件是否是另一个文件的硬链接。
+如果还需要这些类型的更改，应附上单独的说明
+（如 shell 脚本）来完成。
+.PP
+.B patch
+无法判断
+.B ed
+脚本中的行号是否错误，并且只能在发现更改或删除时检测普通 diff 中的错误行号。
+使用模糊因子 3 的上下文差异可能有同样的问题。
+在这些情况下，你应该执行上下文 diff 以查看更改是否合理。
+当然，编译无错误是补丁工作的很好指示，
+但并非总是如此。
+.PP
+.B patch
+通常产生正确的结果，即使它需要大量猜测。
+然而，只有当补丁应用于生成补丁时使用的完全相同版本的文件时，
+结果才保证是正确的。尽管
+.B patch
+尽力猜测，但在某些边缘情况下（如重复的上下文行或极短的上下文），
+仍可能将补丁块安装在错误位置。建议在应用补丁后
+检查关键文件，特别是当涉及安全修复时。
+.SH 兼容性问题
+POSIX 标准指定的行为与 GNU
+.B patch
+不同。
+.RS "\w'  'u"
+.IP \(bu "\w'\(bu  'u"
+在 POSIX
+.B patch
+中，当未使用
+.B \-b
+时，即使存在不匹配也不会制作备份。
+在 GNU
+.B patch
+中，此行为通过
+.B \*=no\-backup\-if\-mismatch
+选项启用，或通过
+.B \*=posix
+选项符合 POSIX 标准，或通过设置
+.B POSIXLY_CORRECT
+环境变量启用。
+.IP \(bu
+从补丁头部推断要修补的文件名时，
+.B patch
+使用一种复杂的方法
+，该方法可选地符合 POSIX 标准。
+如果上下文 diff 头部和
+.B Index:
+行中的文件名在剥离前缀后全部相同，
+则该方法等同于 POSIX。
+如果每个头部的文件名
+都包含相同数量的斜杠，你的补丁通常是兼容的。
+.IP \(bu
+发送指令时请将自身限制为以下选项，
+以便任何运行 GNU
+.B patch
+或符合 POSIX 的
+.B patch
+的人都能执行。
+以下列表中空格是可选的。
+.Sp
+.nf
+.in +3
+.ne 11
+.B \-b
+.B \-c
+.BI \-d " dir"
+.BI \-D " define"
+.B \-e
+.BI \-i " patchfile"
+.B \-l
+.B \-n
+.B \-N
+.BI \-o " outfile"
+.BI \-p " num"
+.B \-R
+.BI \-r " rejectfile"
+.BI \-u
+.in
+.fi
+.RE
+.SH BUGS
+请通过邮件报告错误至
+.BR <bug-patch@gnu.org> 。
+.PP
+如果代码已被复制（例如使用
+\fB#ifdef OLDCODE\fP .\|.\|. \fB#else .\|.\|. #endif\fP ），
+.B patch
+无法同时修补两个版本，即使能工作，
+也很可能修补错误的版本，并告诉你它成功了。
+.PP
+如果你应用已经应用过的补丁，
+.B patch
+认为它是反向补丁，并提供取消应用该补丁。
+这可以被认为是一个特性。
+.PP
+计算如何合并补丁块比使用标准模糊算法困难得多。
+更大的补丁块、更多的上下文、与原始位置更大的偏移量
+以及更差的匹配都会降低算法速度。
+.SH 复制
+版权所有 \(co 1989\(en2025 Free Software Foundation, Inc.
+.br
+版权所有 \(co 1984\(en1986, 1988 Larry Wall.
+.PP
+允许制作和分发本手册的逐字副本，前提是所有副本上保留版权声明和此许可声明。
+.PP
+允许根据逐字复制的条件复制和分发本手册的修改版本，前提是所产生的整个衍生作品按照与此许可声明相同的许可声明条款分发。
+.PP
+允许按照上述修改版本的条件将本手册翻译成其他语言并进行复制和分发，除非此许可声明可以包含在版权持有者批准的翻译中，而不是原始英文中。
+.SH 作者
+Larry Wall 编写了
+.B patch
+的原始版本。
+Paul Eggert 移除了
+.B patch
+的任意限制；添加了对二进制文件、
+设置文件时间和删除文件的支持；
+并使其更好地符合 POSIX 标准。
+其他贡献者包括 Wayne Davison（添加了 unidiff 支持）
+和 David MacKenzie（添加了配置和备份支持）。
+Andreas Gruenbacher 添加了合并支持。
+.SH "[中文版维护人]"
+.B Aurolystant
+.SH "[中文版最新更新]"
+.BR 2026.07.13
+.SH "[中国 Linux 论坛中文手册页翻译计划]"
+.BI https://github.com/man-pages-zh/manpages-zh
