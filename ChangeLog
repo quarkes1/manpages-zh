@@ -1,3 +1,7 @@
+2026-07-13  Boyuan Yang <073plan@gmail.com>
+
+	* Update translation of join(1) to coreutils 9.11.
+
 2026-07-12  Boyuan Yang <073plan@gmail.com>
 
 	* Full translation of zstd(1) from zstd 1.5.7.
