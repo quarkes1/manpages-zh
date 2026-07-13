@@ -1,0 +1,117 @@
+.TH WHICH 1
+.rn RS Rs
+.de RS
+.na
+.nf
+.Rs
+..
+.rn RE Re
+.de RE
+.Re
+.fi
+.ad
+..
+.de Sx
+.PP
+.ne \\$1
+.RS
+..
+.de Ex
+.RE
+.PP
+..
+.na
+.SH 名称
+which \- 显示 (shell) 命令的完整路径。
+.SH 概述
+.B which
+[选项] [\-\-] 程序名 [...]
+.SH 描述
+\fBWhich\fR 接受一个或多个参数。对于每个参数，它向标准输出打印在 shell
+提示符下输入该参数时将执行的可执行文件的完整路径。它通过
+使用与 \fBbash(1)\fR 相同的算法在环境变量 \fBPATH\fR 列出的目录中
+搜索可执行文件或脚本来完成此操作。
+
+此手册页由 \fIwhich.texinfo\fR 文件生成。
+.SH 选项
+.TP 4
+.B --all\fR, \fB-a\fR
+打印 \fBPATH\fR 中所有匹配的可执行文件，而不仅仅是第一个。
+.TP
+.B --read-alias\fR, \fB-i\fR
+从标准输入读取别名，将匹配的别名报告到标准输出。
+这对于在 which 本身使用别名时很有用。例如
+.br
+.B
+alias which=\(cqalias | which -i\(cq\fR。
+.TP
+.B --skip-alias\fR
+忽略选项 \(oq--read-alias\(cq（如果有）。用于在 which 的别名
+或函数中使用 \(oq--read-alias\(cq 选项时显式搜索普通二进制文件。
+.TP
+.B --read-functions\fR
+从标准输入读取 shell 函数定义，将匹配的函数报告到标准输出。
+例如：
+.br
+.B
+which() { declare -f | which --read-functions "$@" }
+.br
+export -f which\fR
+.TP
+.B --skip-dot\fR
+跳过 \fBPATH\fR 中以点号开头的目录。
+.TP
+.B --skip-tilde\fR
+跳过 \fBPATH\fR 中以波浪号开头的目录以及位于 \fBHOME\fR 目录中的可执行文件。
+.TP
+.B --show-dot\fR
+如果 \fBPATH\fR 中的目录以点号开头且在该路径中找到匹配的可执行文件，
+则打印 "./程序名" 而非完整路径。
+.TP
+.B --show-tilde\fR
+当目录与 \fBHOME\fR 目录匹配时输出波浪号。以 root 用户调用时忽略此选项。
+.TP
+.B --tty-only\fR
+如果不是在 tty 上运行，则停止处理右侧的选项。
+.TP
+.B --version,-v,-V\fR
+在标准输出上打印版本信息然后成功退出。
+.TP
+.B --help\fR
+在标准输出上打印使用信息然后成功退出。
+.SH 返回值
+\fBWhich\fR 返回失败参数的数量，未提供 \(oq程序名\(cq 时返回 -1。
+.SH 示例
+推荐的用法是为 \fBwhich\fR 添加别名 (C shell) 或 shell 函数 (Bourne shell)：
+
+[ba]sh:
+.in +5
+.nf
+.na
+which ()
+{
+  (alias; declare -f) | /usr/bin/which --tty-only --read-alias --read-functions --show-tilde --show-dot "$@"
+}
+export -f which
+.in -5
+.ad
+.fi
+
+[t]csh:
+.in +5
+.nf
+.na
+alias which \(cqalias | /usr/bin/which --tty-only --read-alias --show-dot --show-tilde\(cq
+.in -5
+.ad
+.fi
+.SH 作者
+.br
+Carlo Wood <carlo@gnu.org>
+.SH "参见"
+\fBbash(1)\fR
+.SH "[中文版最新更新]"
+.BR 2026.07.12
+.SH "[中文版维护人]"
+.SH "[中国 Linux 论坛中文手册页翻译计划]"
+.BI https://github.com/man-pages-zh/manpages-zh
