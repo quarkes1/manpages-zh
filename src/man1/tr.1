@@ -10,23 +10,23 @@ tr \- 转换或删除字符
 从标准输入中转换、压缩和/或删除字符，将结果写入标准输出。
 字符串1 和字符串2 分别指定控制操作的字符数组 ARRAY1 和 ARRAY2。
 .TP
-\fB\-c\fR, \fB\-C\fR, \fB\-\-complement\fR
+\X'tty: link https://www.gnu.org/software/coreutils/manual/coreutils.html#tr-c'\fB\-c, \-C, \-\-complement\fP\X'tty: link'
 使用 ARRAY1 的补集
 .TP
-\fB\-d\fR, \fB\-\-delete\fR
+\X'tty: link https://www.gnu.org/software/coreutils/manual/coreutils.html#tr-d'\fB\-d, \-\-delete\fP\X'tty: link'
 删除 ARRAY1 中的字符，不进行转换
 .TP
-\fB\-s\fR, \fB\-\-squeeze\-repeats\fR
+\X'tty: link https://www.gnu.org/software/coreutils/manual/coreutils.html#tr-s'\fB\-s, \-\-squeeze\-repeats\fP\X'tty: link'
 将最后一个指定数组中列出的每个重复字符序列，
 替换为该字符的单个副本
 .TP
-\fB\-t\fR, \fB\-\-truncate\-set1\fR
+\X'tty: link https://www.gnu.org/software/coreutils/manual/coreutils.html#tr-t'\fB\-t, \-\-truncate\-set1\fP\X'tty: link'
 首先将 ARRAY1 截断为 ARRAY2 的长度
 .TP
-\fB\-\-help\fR
+\X'tty: link https://www.gnu.org/software/coreutils/tr#tr--help'\fB\-\-help\fP\X'tty: link'
 显示此帮助信息并退出
 .TP
-\fB\-\-version\fR
+\X'tty: link https://www.gnu.org/software/coreutils/tr#tr--version'\fB\-\-version\fP\X'tty: link'
 输出版本信息并退出
 .PP
 数组由字符串指定。大多数字符表示其自身。可识别的转义序列有：
@@ -143,5 +143,6 @@ GNU coreutils 主页：<https://www.gnu.org/software/coreutils/>
 .SH "[中文版最新更新]"
 .BR 2026.07.12
 .SH "[中文版维护人]"
+.B Aurolystant
 .SH "[中国 Linux 论坛中文手册页翻译计划]"
 .BI https://github.com/man-pages-zh/manpages-zh
