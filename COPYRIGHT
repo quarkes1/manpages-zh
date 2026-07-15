@@ -23,6 +23,15 @@ Copyright:
 License: CC0-1.0 or BSD-2-Clause
 
 Files:
+ src/man1/autoconf.1
+Copyright:
+ 2026 Free Software Foundation, Inc.
+License: GPL-3.0-or-later with Autoconf exception
+Comment:
+ https://gnu.org/licenses/gpl.html
+ https://gnu.org/licenses/exceptions.html
+
+Files:
  src/man1/kill.1
 Copyright:
  2002-2024 Craig Small <csmall@dropbear.xyz>
